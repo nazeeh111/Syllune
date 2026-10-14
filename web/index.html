@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#153f37" />
+    <meta
+      name="description"
+      content="Syllune is your private math studio. Write freely, check supported steps exactly, and practice what needs another look."
+    />
+    <title>Syllune · Make the next step click</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to workspace</a>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="./" aria-label="Syllune home"
+          ><svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 3 25 15 37 20 25 25 20 37 15 25 3 20 15 15Z" />
+            <circle cx="20" cy="20" r="5" /></svg
+          ><span>syllune<span class="brand-dot">.</span></span></a
+        >
+        <div class="side-caption">A little clarity, every day.</div>
+        <nav class="navigation" aria-label="Main navigation">
+          <button class="nav-button active" data-view="studio">
+            <span class="nav-icon" aria-hidden="true">▤</span>Studio<span
+              class="nav-count"
+              aria-hidden="true"
+              id="page-count"
+              >1</span
+            ></button
+          ><button class="nav-button" data-view="practice">
+            <span class="nav-icon" aria-hidden="true">◈</span>Practice</button
+          ><button class="nav-button" data-view="progress">
+            <span class="nav-icon" aria-hidden="true">▥</span>Your progress
+          </button>
+        </nav>
+        <div class="side-section">
+          <div class="section-label">
+            NOTEBOOKS<button
+              id="new-book"
+              class="icon-button"
+              aria-label="Create notebook"
+            >
+              +
+            </button>
+          </div>
+          <div id="notebooks"></div>
+          <button id="new-page" class="text-button">+ New page</button>
+        </div>
+        <div class="sidebar-bottom">
+          <div class="focus-card">
+            <div class="section-label">ONE THING AT A TIME</div>
+            <div class="focus-row">
+              <span id="timer">25:00</span
+              ><button
+                id="timer-toggle"
+                class="icon-button"
+                aria-label="Start focus timer"
+              >
+                ▷</button
+              ><button
+                id="timer-reset"
+                class="icon-button"
+                aria-label="Reset focus timer"
+              >
+                ↺
+              </button>
+            </div>
+            <span class="small">A quiet space to concentrate.</span>
+          </div>
+          <div class="side-actions">
+            <button id="settings-button" class="text-button">
+              Settings & backups</button
+            ><button
+              id="help-button"
+              class="icon-button"
+              aria-label="Help and shortcuts"
+            >
+              ?
+            </button>
+          </div>
+          <div class="local-badge">
+            <span></span> On your device. Yours to keep.
+          </div>
+        </div>
+      </aside>
+      <div class="content">
+        <header class="topbar">
+          <button
+            id="mobile-menu"
+            class="icon-button"
+            aria-label="Toggle notebooks"
+            aria-expanded="false"
+          >
+            ☰</button
+          ><span id="breadcrumb">My notebook <span>/</span> Studio</span>
+          <div class="topbar-right">
+            <span id="save-status" role="status">Saved locally</span
+            ><button
+              id="theme-toggle"
+              class="icon-button"
+              aria-label="Switch to dark theme"
+            >
+              ◐
+            </button>
+          </div>
+        </header>
+        <main id="main" tabindex="-1">
+          <section id="studio-view" class="view">
+            <div class="heading-row">
+              <div>
+                <p class="eyebrow">SPACE FOR YOUR THINKING</p>
+                <input
+                  id="page-title"
+                  aria-label="Page title"
+                  maxlength="120"
+                  value="A fresh start"
+                />
+                <p class="subtitle">
+                  Write freely. Find the step that needs another look.
+                </p>
+              </div>
+              <div class="heading-actions">
+                <button id="example" class="button subtle">
+                  Try an example</button
+                ><button id="export-page" class="button subtle">
+                  Export page ↗
+                </button>
+              </div>
+            </div>
+            <div class="studio-grid">
+              <section class="paper-panel" aria-label="Ink notebook">
+                <div class="toolbar" role="toolbar" aria-label="Drawing tools">
+                  <div class="tool-group">
+                    <button
+                      id="tool-pen"
+                      class="tool active"
+                      data-tool="pen"
+                      aria-label="Pen"
+                      aria-pressed="true"
+                    >
+                      ✎</button
+                    ><button
+                      id="tool-erase"
+                      class="tool"
+                      data-tool="erase"
+                      aria-label="Eraser"
+                      aria-pressed="false"
+                    >
+                      ◇</button
+                    ><button
+                      id="tool-select"
+                      class="tool"
+                      data-tool="select"
+                      aria-label="Select and move ink"
+                      aria-pressed="false"
+                    >
+                      ⌖
+                    </button>
+                  </div>
+                  <div class="tool-group">
+                    <button
+                      class="swatch active"
+                      data-color="#213b37"
+                      style="--swatch: #213b37"
+                      aria-label="Forest ink"
+                      aria-pressed="true"
+                    ></button
+                    ><button
+                      class="swatch"
+                      data-color="#285cb2"
+                      style="--swatch: #285cb2"
+                      aria-label="Blue ink"
+                      aria-pressed="false"
+                    ></button
+                    ><button
+                      class="swatch"
+                      data-color="#a84724"
+                      style="--swatch: #a84724"
+                      aria-label="Terracotta ink"
+                      aria-pressed="false"
+                    ></button
+                    ><label class="sr-only" for="pen-width">Pen width</label
+                    ><input
+                      id="pen-width"
+                      type="range"
+                      min="1"
+                      max="8"
+                      value="3"
+                      aria-label="Pen width"
+                    />
+                  </div>
+                  <div class="tool-group history">
+                    <button
+                      id="undo"
+                      class="tool"
+                      aria-label="Undo ink"
+                      disabled
+                    >
+                      ↶</button
+                    ><button
+                      id="redo"
+                      class="tool"
+                      aria-label="Redo ink"
+                      disabled
+                    >
+                      ↷
+                    </button>
+                  </div>
+                  <div class="tool-group">
+                    <button
+                      id="insert-image"
+                      class="tool"
+                      aria-label="Insert image"
+                    >
+                      ▧</button
+                    ><button id="clear-ink" class="tool" aria-label="Clear ink">
+                      ⌫</button
+                    ><label class="sr-only" for="paper-type">Paper style</label
+                    ><select id="paper-type" aria-label="Paper style">
+                      <option value="dot">Dots</option>
+                      <option value="line">Lines</option>
+                      <option value="blank">Blank</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="canvas-scroll">
+                  <div id="paper" class="paper dot">
+                    <canvas
+                      id="ink"
+                      width="1000"
+                      height="1200"
+                      aria-label="Drawing canvas. Use the step transcript alongside it for keyboard-accessible math input."
+                    ></canvas>
+                    <div id="blank-hint" class="blank-hint">
+                      <span class="paper-star">✧</span>
+                      <h2>Your thinking goes here.</h2>
+                      <p>
+                        A pen, a problem, a fresh page.<br />Or type your steps
+                        in the panel alongside.
+                      </p>
+                      <button id="blank-example" class="button primary">
+                        See it in action ↗
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="paper-footer">
+                  <span id="stroke-count">0 strokes</span
+                  ><span>Pen · touch · mouse</span>
+                  <div>
+                    <button
+                      id="zoom-out"
+                      class="icon-button"
+                      aria-label="Zoom out"
+                    >
+                      −</button
+                    ><span id="zoom-label">100%</span
+                    ><button
+                      id="zoom-in"
+                      class="icon-button"
+                      aria-label="Zoom in"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="check-panel">
+                <div class="check-header">
+                  <div class="compass" aria-hidden="true">✧</div>
+                  <div>
+                    <h2>Your next step</h2>
+                    <p>Clarity without the interruption.</p>
+                  </div>
+                </div>
+                <div class="quiet-row">
+                  <span><span class="dot"></span> Quiet checking</span
+                  ><label class="switch"
+                    ><input
+                      id="quiet-toggle"
+                      type="checkbox"
+                      checked
+                      aria-label="Automatically check typed steps after a pause" /><span></span
+                  ></label>
+                </div>
+                <div class="transcript-heading">
+                  <label for="transcript">Step transcript</label
+                  ><button id="recognize" class="text-button">
+                    Read ink ↗
+                  </button>
+                </div>
+                <textarea
+                  id="transcript"
+                  rows="7"
+                  maxlength="20000"
+                  spellcheck="false"
+                  placeholder="One step per line. For example:\n2x + 6 = 14\n2x = 8\nx = 4"
+                  aria-describedby="transcript-note"
+                ></textarea>
+                <p id="transcript-note" class="small">
+                  Checks apply to this transcript. Review recognition and keep
+                  it matched to your ink.
+                </p>
+                <button id="check" class="button primary full">
+                  Check my steps <span>↗</span>
+                </button>
+                <div id="check-results" class="results" aria-live="polite">
+                  <div class="check-empty">
+                    <span class="mini-label">LET’S MAKE IT CLICK</span>
+                    <h3>Keep the thinking.<br />Lose the guesswork.</h3>
+                    <p>
+                      Write your steps, then check the chain. We’ll find the
+                      first step to revisit.
+                    </p>
+                  </div>
+                </div>
+                <details class="scope">
+                  <summary>What can Syllune check?</summary>
+                  <p>
+                    Exact arithmetic, expressions in x through degree 8, linear
+                    and quadratic real equations, and polynomial derivatives
+                    using d/dx(...). Use “or” between alternative solutions.
+                  </p>
+                  <p>
+                    Variable denominators, inequalities, functions such as sin,
+                    multiple variables and more complex equations stay
+                    unverified. A check compares lines; it does not establish
+                    that your starting problem is correct.
+                  </p>
+                </details>
+              </aside>
+            </div>
+          </section>
+          <section id="practice-view" class="view" hidden>
+            <div class="heading-row">
+              <div>
+                <p class="eyebrow">SMALL REPS. LASTING CLARITY.</p>
+                <h1>Make it second nature.</h1>
+                <p class="subtitle">
+                  Practice one idea at a time. Let the understanding stick.
+                </p>
+              </div>
+            </div>
+            <div id="topic-list" class="topic-list"></div>
+            <div class="practice-layout">
+              <section class="practice-card">
+                <div class="section-label">
+                  <span id="practice-topic">LINEAR EQUATIONS</span
+                  ><span id="practice-index">01</span>
+                </div>
+                <h2 id="problem-prompt"></h2>
+                <label for="practice-answer">Your answer</label
+                ><input
+                  id="practice-answer"
+                  autocomplete="off"
+                  spellcheck="false"
+                  maxlength="600"
+                  placeholder="x = ..."
+                />
+                <div class="practice-actions">
+                  <button id="grade" class="button primary">
+                    Check answer ↗</button
+                  ><button id="hint" class="button subtle">A little hint</button
+                  ><button id="next-problem" class="button subtle">
+                    Next problem →
+                  </button>
+                </div>
+                <div id="practice-feedback" aria-live="polite"></div>
+                <div id="hint-text" class="hint-text" hidden></div>
+                <details id="solution">
+                  <summary>Show the worked solution</summary>
+                  <p id="solution-text"></p>
+                </details>
+              </section>
+              <aside class="practice-aside">
+                <span class="large-star">✧</span>
+                <h2>Progress is a practice.</h2>
+                <p>
+                  Hints help you get unstuck. Your practice history records real
+                  answers, including corrections.
+                </p>
+                <div id="review-summary"></div>
+                <p class="small">
+                  A simple review schedule returns successful topics after 1, 3,
+                  7, 14 and 30 days. It is a practice aid, not a grade
+                  prediction.
+                </p>
+              </aside>
+            </div>
+          </section>
+          <section id="progress-view" class="view" hidden>
+            <div class="heading-row">
+              <div>
+                <p class="eyebrow">PROOF OF YOUR PRACTICE</p>
+                <h1>A clearer picture.</h1>
+                <p class="subtitle">Your actual practice, with room to grow.</p>
+              </div>
+            </div>
+            <div id="progress-stats" class="stats"></div>
+            <section class="progress-card">
+              <h2>One idea at a time</h2>
+              <div id="mastery-list"></div>
+            </section>
+            <section class="progress-card">
+              <h2>Recent attempts</h2>
+              <div id="attempt-list"></div>
+            </section>
+          </section>
+        </main>
+        <footer class="app-footer">
+          <span>Make the next step click.</span><span>Syllune · by Nazeeh</span>
+        </footer>
+      </div>
+    </div>
+    <dialog id="settings">
+      <div class="dialog-header">
+        <h2>Your space. Your control.</h2>
+        <button class="icon-button close-dialog" aria-label="Close settings">
+          ×
+        </button>
+      </div>
+      <p>
+        Your notebook lives in this browser. Back it up before clearing browser
+        data or changing devices.
+      </p>
+      <div class="settings-row">
+        <div>
+          <h3>Portable backup</h3>
+          <p>Ink, images, transcripts and practice history.</p>
+        </div>
+        <button id="backup" class="button primary">Export backup</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <h3>Bring your work along</h3>
+          <p>Import adds notebooks. Your current work is preserved.</p>
+        </div>
+        <button id="import-backup" class="button subtle">Import backup</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <h3>Print this page</h3>
+          <p>Save a PDF using your browser’s print dialog.</p>
+        </div>
+        <button id="print-page" class="button subtle">Print / PDF</button>
+      </div>
+      <div class="privacy-note">
+        <strong>Private by design.</strong>
+        <p>
+          No account, analytics, trackers or remote math requests. Optional Mac
+          recognition runs in the local companion. Hosted pages support typed
+          checking; use <code>npm start</code> locally for recognition.
+        </p>
+      </div>
+      <p id="settings-status" role="status"></p>
+    </dialog>
+    <dialog id="help">
+      <div class="dialog-header">
+        <h2>A few things that help.</h2>
+        <button class="icon-button close-dialog" aria-label="Close help">
+          ×
+        </button>
+      </div>
+      <ol class="help-steps">
+        <li>
+          <strong>Write or import.</strong> Use a stylus, touch or mouse. Select
+          ink with a rectangle and drag it to move.
+        </li>
+        <li>
+          <strong>Review the transcript.</strong> Type the math, or use Read ink
+          in the Mac companion. Recognition may confuse symbols.
+        </li>
+        <li>
+          <strong>Check the chain.</strong> Green means the transition holds in
+          the supported language. Amber means it needs your review.
+        </li>
+        <li>
+          <strong>Build understanding.</strong> Practice the flagged topic, use
+          hints, and return when it’s due.
+        </li>
+      </ol>
+      <dl class="shortcuts">
+        <dt>Ctrl / ⌘ + Z</dt>
+        <dd>Undo ink</dd>
+        <dt>Ctrl / ⌘ + Shift + Z</dt>
+        <dd>Redo ink</dd>
+        <dt>Ctrl / ⌘ + Enter</dt>
+        <dd>Check transcript</dd>
+        <dt>P / E / V</dt>
+        <dd>Pen / eraser / select</dd>
+      </dl>
+      <p class="small">
+        Shortcuts leave text fields alone. Browser zoom remains available.
+      </p>
+    </dialog>
+    <dialog id="confirm">
+      <div class="dialog-header">
+        <h2 id="confirm-title">Clear this page’s ink?</h2>
+      </div>
+      <p id="confirm-text">
+        You can undo this action while this page remains open.
+      </p>
+      <div class="practice-actions">
+        <button id="confirm-yes" class="button primary">Clear ink</button
+        ><button id="confirm-no" class="button subtle">Keep it</button>
+      </div>
+    </dialog>
+    <input
+      type="file"
+      id="image-file"
+      accept="image/png,image/jpeg,image/webp"
+      hidden
+    /><input
+      type="file"
+      id="backup-file"
+      accept="application/json,.json"
+      hidden
+    />
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
