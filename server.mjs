@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { createLocalTutor } from './local-tutor.mjs';
 import { readFile, mkdtemp, writeFile, rm, mkdir } from 'node:fs/promises';
 import { resolve, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -56,7 +57,7 @@ async function ocrBinary() {
     });
   return compiling;
 }
-export function createAppServer() {
+export function createAppServer({ tutor = createLocalTutor() } = {}) {
   return http.createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
@@ -83,6 +84,49 @@ export function createAppServer() {
         engine: process.platform === 'darwin' ? 'Apple Vision' : null,
         local: true,
       });
+    }
+    if (path === '/api/tutor/models') {
+      if (req.method !== 'GET') return send(res, 405, { error: 'Use GET.' });
+      try {
+        return send(res, 200, { models: await tutor.models(), local: true });
+      } catch {
+        return send(res, 200, { models: [], local: true, unavailable: true });
+      }
+    }
+    if (path === '/api/tutor') {
+      if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });
+      if (req.headers.origin !== `http://${host}`)
+        return send(res, 403, {
+          error: 'Tutor requests must come from this local app.',
+        });
+      if (req.headers['content-type'] !== 'application/json')
+        return send(res, 415, { error: 'Send a JSON question.' });
+      let size = 0;
+      const chunks = [];
+      try {
+        for await (const part of req) {
+          size += part.length;
+          if (size > 100_000) {
+            send(res, 413, { error: 'Question and context are too large.' });
+            req.resume();
+            return;
+          }
+          chunks.push(part);
+        }
+      } catch {
+        return send(res, 400, { error: 'Question upload interrupted.' });
+      }
+      let input;
+      try {
+        input = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      } catch {
+        return send(res, 400, { error: 'Invalid JSON question.' });
+      }
+      try {
+        return send(res, 200, await tutor.ask(input));
+      } catch (e) {
+        return send(res, e.status || 503, { error: e.message });
+      }
     }
     if (path === '/api/recognize') {
       if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });

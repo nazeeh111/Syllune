@@ -69,3 +69,26 @@ test('stale snapshot cannot replace newer saved bytes', async () => {
   assert.throws(() => saveState(storage, b, old), /another tab/i);
   assert.equal(JSON.parse(raw).notebooks[0].pages[0].transcript, 'x=123');
 });
+test('local tutor conversations survive backup validation', () => {
+  const s = freshState();
+  s.notebooks[0].pages[0].tutor = [
+    { role: 'user', content: 'Why?', at: Date.now() },
+    { role: 'assistant', content: 'Review the chain rule.', at: Date.now() },
+  ];
+  assert.equal(
+    validateBackup(JSON.stringify(s)).notebooks[0].pages[0].tutor.length,
+    2,
+  );
+  s.notebooks[0].pages[0].tutor[0].role = 'system';
+  assert.throws(() => validateBackup(JSON.stringify(s)), /conversation/);
+});
+test('pending tutor questions are bounded and portable in backups', () => {
+  const s = freshState();
+  s.notebooks[0].pages[0].tutorDraft = 'Explain the chain rule.';
+  assert.equal(
+    validateBackup(JSON.stringify(s)).notebooks[0].pages[0].tutorDraft,
+    'Explain the chain rule.',
+  );
+  s.notebooks[0].pages[0].tutorDraft = 'x'.repeat(2001);
+  assert.throws(() => validateBackup(JSON.stringify(s)), /draft/);
+});

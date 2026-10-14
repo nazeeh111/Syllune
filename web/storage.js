@@ -6,6 +6,8 @@ export const newPage = (title = 'Untitled page') => ({
   strokes: [],
   images: [],
   transcript: '',
+  tutor: [],
+  tutorDraft: '',
   paper: 'dot',
   created: Date.now(),
   updated: Date.now(),
@@ -75,6 +77,21 @@ export function validateBackup(text) {
           finite(p.updated, 0, 1e15),
         'Invalid page.',
       );
+      if (p.tutorDraft !== undefined)
+        insist(str(p.tutorDraft, 2000), 'Invalid pending tutor draft.');
+      if (p.tutor !== undefined)
+        insist(
+          Array.isArray(p.tutor) &&
+            p.tutor.length <= 40 &&
+            p.tutor.every(
+              (m) =>
+                m &&
+                ['user', 'assistant'].includes(m.role) &&
+                str(m.content, 6000) &&
+                finite(m.at, 0, 1e15),
+            ),
+          'Invalid local tutor conversation.',
+        );
       id(p.id);
       insist(
         Array.isArray(p.strokes) &&

@@ -1,4 +1,4 @@
-const CACHE = 'syllune-v1.0.0';
+const CACHE = 'syllune-v1.0.0-release2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './app.js',
   './engine.js',
   './ink.js',
+  './quiet-ink.js',
   './practice.js',
   './storage.js',
   './icon.svg',
@@ -39,15 +40,13 @@ self.addEventListener('fetch', (e) => {
     return;
   e.respondWith(
     fetch(e.request).catch(() =>
-      caches
-        .match(e.request)
-        .then(
-          (r) =>
-            r ||
-            new Response('This resource is unavailable offline.', {
-              status: 503,
-            }),
-        ),
+      caches.match(e.request).then(
+        (r) =>
+          r ||
+          new Response('This resource is unavailable offline.', {
+            status: 503,
+          }),
+      ),
     ),
   );
 });

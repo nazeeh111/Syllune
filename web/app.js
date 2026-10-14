@@ -1,4 +1,5 @@
 import { checkWork } from './engine.js';
+import { QuietInk, assessRecognition } from './quiet-ink.js';
 import { Ink, exampleInk } from './ink.js';
 import {
   freshState,
@@ -67,7 +68,10 @@ let book,
   saveTimer,
   toastTimer,
   ocrAvailable = false,
-  ocrPending = false;
+  ocrPending = false,
+  lastReading = null,
+  tutorPending = false,
+  tutorPage = null;
 function toast(message) {
   $('toast').textContent = message;
   $('toast').hidden = false;
@@ -111,13 +115,128 @@ const ink = new Ink(
   () => {
     refreshInk();
     persist();
+    scheduleInkRead();
   },
   (u, r) => {
     $('undo').disabled = !u;
     $('redo').disabled = !r;
   },
 );
+const quiet = new QuietInk({
+  capture: async () => {
+    if (ink.active) throw Error('Writing is still in progress.');
+    return ink.blob();
+  },
+  recognize: async (blob, signal) => {
+    const r = await fetch('./api/recognize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/png' },
+      body: blob,
+      signal: AbortSignal.any([signal, AbortSignal.timeout(120000)]),
+    });
+    const d = await r.json();
+    if (!r.ok) throw Error(d.error || 'Local recognition unavailable.');
+    return d;
+  },
+  onStart: () => {
+    $('quiet-reading').hidden = false;
+    $('quiet-status').textContent = 'Reading ink locally…';
+  },
+  onResult: (result) => {
+    if (!ink.active) renderInkSuggestion(result);
+  },
+  onError: () => {
+    $('quiet-reading').hidden = false;
+    $('quiet-status').textContent =
+      'Ink read unavailable. Typed checking still works.';
+  },
+});
+if (!state.settings.quiet) quiet.stop();
+function invalidateReading() {
+  quiet.invalidate();
+  lastReading = null;
+  $('ink-marks').replaceChildren();
+  $('quiet-suggestion').replaceChildren();
+  $('review-reading').hidden = true;
+  $('quiet-reading').hidden = true;
+}
+function scheduleInkRead() {
+  invalidateReading();
+  if (
+    state.settings.quiet &&
+    ocrAvailable &&
+    writerAvailable &&
+    currentView === 'studio' &&
+    (page.strokes.length || page.images.length)
+  )
+    quiet.schedule();
+}
+$('ink').addEventListener('pointerdown', invalidateReading);
+function renderInkSuggestion(result) {
+  lastReading = { result, pageId: page.id, revision: quiet.revision };
+  $('quiet-reading').hidden = false;
+  $('quiet-suggestion').replaceChildren();
+  $('ink-marks').replaceChildren();
+  $('review-reading').hidden = !result.text;
+  $('quiet-status').textContent = result.text
+    ? 'Automatic ink reading · not yet reviewed'
+    : 'No readable math found.';
+  if (result.firstIssue !== null && result.check.steps[result.firstIssue]) {
+    const step = result.check.steps[result.firstIssue];
+    const card = el('div', 'ink-suggestion');
+    card.append(
+      el(
+        'strong',
+        '',
+        step.status === 'incorrect'
+          ? `Possible issue in ink · step ${result.firstIssue + 1}`
+          : 'Recognized notation needs a look',
+      ),
+      el('p', '', step.detail),
+    );
+    $('quiet-suggestion').append(card);
+    const b = result.lines[result.firstIssue]?.box;
+    if (b) {
+      const mark = el('div', 'ink-mark');
+      mark.style.left = b.x * 100 + '%';
+      mark.style.top = b.y * 100 + '%';
+      mark.style.width = b.width * 100 + '%';
+      mark.style.height = b.height * 100 + '%';
+      mark.append(el('span', '', `Review step ${result.firstIssue + 1}`));
+      $('ink-marks').append(mark);
+    }
+  } else if (result.check.steps.length > 1)
+    $('quiet-status').textContent =
+      'No issue found in the reading. Review before relying on it.';
+}
+$('review-reading').onclick = () => {
+  if (!lastReading || lastReading.pageId !== page.id) return;
+  quiet.invalidate();
+  lastReading.revision = quiet.revision;
+  $('recognized-preview').value = lastReading.result.text;
+  $('ink-review').showModal();
+};
+$('apply-reading').onclick = () => {
+  if (!lastReading || lastReading.pageId !== page.id) return;
+  if ($('recognized-preview').value.length > 20000)
+    return toast(
+      'Keep the reviewed transcript within 20,000 characters before using it.',
+    );
+  if (
+    page.transcript &&
+    !confirm(
+      'Replace this page’s existing transcript with the reading you reviewed?',
+    )
+  )
+    return;
+  page.transcript = $('recognized-preview').value;
+  $('transcript').value = page.transcript;
+  $('ink-review').close();
+  invalidateReading();
+  runCheck();
+};
 function selectPage(bookId, pageId) {
+  invalidateReading();
   clearTimeout(quietTimer);
   clearTimeout(saveTimer);
   if (page) persist();
@@ -140,6 +259,7 @@ function selectPage(bookId, pageId) {
   resetResults();
   showView('studio');
   persist();
+  scheduleInkRead();
 }
 function renderNotebooks() {
   const container = $('notebooks');
@@ -180,6 +300,7 @@ function renderNotebooks() {
   );
 }
 function showView(view) {
+  if (view !== 'studio') quiet.invalidate();
   currentView = view;
   document
     .querySelectorAll('.view')
@@ -486,6 +607,8 @@ function timerTick() {
   }
 }
 async function recognize() {
+  invalidateReading();
+  const revision = quiet.revision;
   if (ocrPending) return;
   if (!ocrAvailable)
     return toast(
@@ -505,9 +628,11 @@ async function recognize() {
     });
     const data = await res.json();
     if (!res.ok) throw Error(data.error || 'Recognition unavailable.');
-    if (page !== target)
-      throw Error('You changed pages. Recognized text was not applied.');
-    const text = data.lines.map((l) => l.text).join('\n');
+    if (page !== target || quiet.revision !== revision)
+      throw Error(
+        'The ink or transcript changed while reading. Recognized text was not applied.',
+      );
+    const text = assessRecognition(data).text;
     if (!text)
       throw Error(
         'No readable text found. Try larger, clearer writing, or type the steps.',
@@ -534,6 +659,145 @@ async function recognize() {
     $('recognize').textContent = 'Read ink ↗';
   }
 }
+function renderTutorMessages(target) {
+  const box = $('tutor-messages');
+  box.replaceChildren();
+  for (const message of target.tutor || []) {
+    const card = el('div', 'tutor-message ' + message.role);
+    card.append(
+      el(
+        'strong',
+        '',
+        message.role === 'user'
+          ? 'YOUR QUESTION'
+          : 'LOCAL MODEL · UNVERIFIED GUIDANCE',
+      ),
+      el('span', '', message.content),
+    );
+    box.append(card);
+  }
+  box.scrollTop = box.scrollHeight;
+}
+async function openTutor() {
+  tutorPage = page;
+  $('tutor-question').value = page.tutorDraft || '';
+  renderTutorMessages(page);
+  $('tutor').showModal();
+  $('tutor-model').replaceChildren();
+  $('tutor-ask').disabled = true;
+  if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
+    $('tutor-status').textContent =
+      'Open the local companion and start Ollama with an installed text model for private tutoring. The hosted studio offers exact supported checks and practice.';
+    return;
+  }
+  $('tutor-status').textContent = tutorPending
+    ? 'A local reply is still running. You can close this panel and keep writing.'
+    : 'Looking for installed local models…';
+  try {
+    const r = await fetch('./api/tutor/models', {
+      signal: AbortSignal.timeout(5000),
+    });
+    const d = await r.json();
+    if (!r.ok || !Array.isArray(d.models) || !d.models.length)
+      throw Error(
+        'Start Ollama with an installed local text model, then reopen this panel. No model is downloaded automatically.',
+      );
+    for (const m of d.models) {
+      const option = el('option', '', m.name);
+      option.value = m.name;
+      $('tutor-model').append(option);
+    }
+    $('tutor-ask').disabled = tutorPending;
+    $('tutor-status').textContent =
+      'Runs on this computer. Replies may be wrong; exact checks remain separate.';
+  } catch (e) {
+    $('tutor-status').textContent = e.message;
+  }
+}
+async function askTutor() {
+  if (tutorPending || !tutorPage) return;
+  const question = $('tutor-question').value.trim();
+  if (!question) return toast('Write a question first.');
+  const target = tutorPage;
+  target.tutorDraft = question;
+  persist();
+  const model = $('tutor-model').value;
+  if (!model) return;
+  tutorPending = true;
+  $('tutor-ask').disabled = true;
+  $('tutor-question').disabled = true;
+  $('tutor-status').textContent =
+    'Thinking locally… You can close this panel and keep writing.';
+  try {
+    const r = await fetch('./api/tutor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        question,
+        transcript: target.transcript,
+        history: (target.tutor || [])
+          .slice(-12)
+          .map(({ role, content }) => ({ role, content })),
+      }),
+      signal: AbortSignal.timeout(125000),
+    });
+    const d = await r.json();
+    if (!r.ok) throw Error(d.error || 'The local tutor could not finish.');
+    if (
+      typeof d.answer !== 'string' ||
+      d.answer.length > 6000 ||
+      d.verified !== false ||
+      d.local !== true
+    )
+      throw Error('The local tutor returned an unsupported reply.');
+    target.tutor = [
+      ...(target.tutor || []),
+      { role: 'user', content: question, at: Date.now() },
+      { role: 'assistant', content: d.answer, at: Date.now() },
+    ].slice(-40);
+    target.tutorDraft = '';
+    target.updated = Date.now();
+    persist();
+    if (tutorPage === target) {
+      renderTutorMessages(target);
+      $('tutor-question').value = '';
+      $('tutor-status').textContent = d.truncated
+        ? 'This model reply was cut short. Treat it as incomplete guidance.'
+        : d.contextTruncated
+          ? 'Only the first part of the page transcript was included. Guidance is unverified.'
+          : 'Local model guidance. Check the reasoning yourself before using it.';
+    }
+  } catch (e) {
+    $('tutor-status').textContent = e.message;
+  } finally {
+    tutorPending = false;
+    $('tutor-ask').disabled = !$('tutor-model').value;
+    $('tutor-question').disabled = false;
+  }
+}
+$('tutor-open').onclick = openTutor;
+$('tutor-ask').onclick = askTutor;
+$('tutor-question').oninput = () => {
+  if (tutorPage) {
+    tutorPage.tutorDraft = $('tutor-question').value;
+    delayedSave();
+  }
+};
+$('tutor-clear').onclick = () => {
+  if (tutorPending)
+    return toast('Wait for the local reply before clearing this conversation.');
+  if (
+    tutorPage?.tutor?.length &&
+    !confirm(
+      'Clear this page’s saved tutor conversation? Export a backup first if you want to keep it.',
+    )
+  )
+    return;
+  tutorPage.tutor = [];
+  renderTutorMessages(tutorPage);
+  persist();
+};
 $('new-book').onclick = () => {
   if (state.notebooks.length >= 50)
     return toast(
@@ -561,6 +825,7 @@ $('page-title').oninput = () => {
   delayedSave();
 };
 $('transcript').oninput = () => {
+  invalidateReading();
   page.transcript = $('transcript').value;
   page.updated = Date.now();
   delayedSave();
@@ -570,6 +835,9 @@ $('transcript').oninput = () => {
 $('quiet-toggle').checked = state.settings.quiet;
 $('quiet-toggle').onchange = () => {
   state.settings.quiet = $('quiet-toggle').checked;
+  state.settings.quiet ? quiet.start() : quiet.stop();
+  invalidateReading();
+  if (state.settings.quiet) scheduleInkRead();
   clearTimeout(quietTimer);
   persist();
 };
@@ -828,6 +1096,7 @@ if (['localhost', '127.0.0.1'].includes(location.hostname))
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       ocrAvailable = !!d?.recognition;
+      scheduleInkRead();
       $('recognize').title = ocrAvailable
         ? 'Recognize on-device with Apple Vision'
         : 'Typed checking is available. Mac companion needed for recognition.';

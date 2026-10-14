@@ -236,6 +236,7 @@
                       height="1200"
                       aria-label="Drawing canvas. Use the step transcript alongside it for keyboard-accessible math input."
                     ></canvas>
+                    <div id="ink-marks" aria-hidden="true"></div>
                     <div id="blank-hint" class="blank-hint">
                       <span class="paper-star">✧</span>
                       <h2>Your thinking goes here.</h2>
@@ -285,8 +286,17 @@
                       id="quiet-toggle"
                       type="checkbox"
                       checked
-                      aria-label="Automatically check typed steps after a pause" /><span></span
+                      aria-label="Quiet checks after a typing or writing pause" /><span></span
                   ></label>
+                </div>
+                <div id="quiet-reading" class="quiet-reading" hidden>
+                  <span id="quiet-status" class="small"
+                    >Reading ink locally…</span
+                  >
+                  <div id="quiet-suggestion" aria-live="polite"></div>
+                  <button id="review-reading" class="text-button" hidden>
+                    Review ink reading →
+                  </button>
                 </div>
                 <div class="transcript-heading">
                   <label for="transcript">Step transcript</label
@@ -319,6 +329,9 @@
                     </p>
                   </div>
                 </div>
+                <button id="tutor-open" class="text-button">
+                  Ask the local tutor →
+                </button>
                 <details class="scope">
                   <summary>What can Syllune check?</summary>
                   <p>
@@ -496,6 +509,64 @@
       </dl>
       <p class="small">
         Shortcuts leave text fields alone. Browser zoom remains available.
+      </p>
+    </dialog>
+    <dialog id="ink-review">
+      <div class="dialog-header">
+        <h2>An ink reading, not a verdict.</h2>
+        <button class="icon-button close-dialog" aria-label="Close ink reading">
+          ×
+        </button>
+      </div>
+      <p>
+        Recognition can misread symbols. Review and edit the reading below
+        before using it as your transcript. Your existing transcript stays
+        untouched until you choose to replace it.
+      </p>
+      <label class="sr-only" for="recognized-preview"
+        >Review the ink transcription</label
+      >
+      <textarea
+        id="recognized-preview"
+        maxlength="20000"
+        rows="8"
+        spellcheck="false"
+      ></textarea>
+      <button id="apply-reading" class="button primary">
+        Use reviewed transcript
+      </button>
+    </dialog>
+    <dialog id="tutor">
+      <div class="dialog-header">
+        <h2>A little help with the why.</h2>
+        <button class="icon-button close-dialog" aria-label="Close local tutor">
+          ×
+        </button>
+      </div>
+      <p id="tutor-status">
+        The local tutor uses an installed model through your companion. Its
+        guidance can be wrong. Exact checks stay separate.
+      </p>
+      <label for="tutor-model" class="small">Installed local model</label
+      ><select id="tutor-model" aria-label="Local tutor model"></select>
+      <div id="tutor-messages" class="tutor-messages" aria-live="polite"></div>
+      <label class="sr-only" for="tutor-question">Ask a math question</label
+      ><textarea
+        id="tutor-question"
+        rows="3"
+        maxlength="2000"
+        placeholder="Why does this step work? Or ask for another practice question."
+        spellcheck="true"
+      ></textarea>
+      <div class="practice-actions">
+        <button id="tutor-ask" class="button primary">Ask locally ↗</button
+        ><button id="tutor-clear" class="button subtle">
+          Clear this conversation
+        </button>
+      </div>
+      <p class="small">
+        Your question, this page’s transcript and recent conversation stay on
+        this computer. Model replies are suggestions, never verified answers.
       </p>
     </dialog>
     <dialog id="confirm">

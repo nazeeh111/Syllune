@@ -276,6 +276,7 @@ export class Ink {
     }
   }
   async blob() {
+    const selection = this.selection;
     this.selection = null;
     this.render();
     const c = document.createElement('canvas');
@@ -285,6 +286,8 @@ export class Ink {
     ctx.fillStyle = '#fffef9';
     ctx.fillRect(0, 0, 1000, 1200);
     ctx.drawImage(this.canvas, 0, 0);
+    this.selection = selection;
+    this.render();
     return new Promise((r) => c.toBlob(r, 'image/png'));
   }
 }

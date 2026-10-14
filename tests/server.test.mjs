@@ -53,3 +53,38 @@ test('validates recognition content before executing native tool', async () => {
   });
   assert.equal(bad.status, 400);
 });
+test('local tutor rejects foreign origins and malformed requests', async () => {
+  assert.equal(
+    (
+      await fetch(url + '/api/tutor', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://evil.test',
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await fetch(url + '/api/tutor', {
+        method: 'POST',
+        headers: { Origin: url, 'Content-Type': 'application/json' },
+        body: 'not json',
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await fetch(url + '/api/tutor', {
+        method: 'POST',
+        headers: { Origin: url, 'Content-Type': 'application/json' },
+        body: '{}',
+      })
+    ).status,
+    400,
+  );
+});

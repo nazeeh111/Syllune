@@ -22,8 +22,12 @@ For degree 3–8, only proportional polynomial equations are verified. Other tra
 
 ## Recognition
 
-Apple Vision returns candidates and bounding boxes from an image of the current page. Syllune never treats OCR confidence as a math verdict. It presents editable text and requires a separate check action. Images and ink remain unchanged. Uppercase X is accepted as x; inspect possible multiplication, signs, superscripts and split lines yourself.
+Apple Vision returns candidates and bounding boxes from an image of the current page. Syllune never treats OCR confidence as a math verdict. Manual recognition presents editable text and requires a separate check action. Quiet reads may flag a possible issue in OCR-derived ink regions; those flags remain suggestions until you review the reading. Quiet reads never replace your existing transcript automatically. Images and ink remain unchanged. Uppercase X is accepted as x; inspect possible multiplication, signs, superscripts and split lines yourself.
 
 ## Bounds
 
 Maximum 80 nonempty lines per check; 600 characters and 200 tokens per expression; 24 nested levels; powers 0–8; 20-character numeric tokens; rational numerator/denominator length 160 digits; at most 8 alternative equations. Outside these bounds, checks stay unverified rather than executing an unbounded expression. There is no eval or generated executable math code.
+
+## Broader explanations
+
+The optional local tutor can discuss math beyond this exact language. Its model-generated guidance is explicitly unverified and never changes a checker verdict. For example, a chain-rule explanation is advice to inspect, not a symbolic proof. Review both recognition and reasoning before relying on it.

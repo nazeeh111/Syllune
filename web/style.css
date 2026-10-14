@@ -261,7 +261,7 @@ select:focus-visible {
   align-items: center;
 }
 .local-badge span,
-.dot {
+.quiet-row .dot {
   display: inline-block;
   width: 5px;
   height: 5px;
@@ -1335,4 +1335,98 @@ dialog > p {
   .view[hidden] {
     display: none !important;
   }
+}
+.quiet-reading {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: -5px 0 16px;
+}
+.quiet-reading .small {
+  font-size: 9px;
+  margin: 0;
+}
+.ink-suggestion {
+  font-size: 10px;
+  line-height: 1.7;
+  margin-top: 9px;
+}
+.ink-suggestion strong {
+  color: var(--orange);
+}
+.ink-suggestion p {
+  margin: 7px 0 0;
+  color: var(--muted);
+}
+#ink-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 6;
+  pointer-events: none;
+}
+.ink-mark {
+  position: absolute;
+  outline: 2px dashed #b8713e;
+  outline-offset: 8px;
+  border-radius: 3px;
+}
+.ink-mark span {
+  position: absolute;
+  top: -27px;
+  right: 0;
+  background: #fff1df;
+  color: #834019;
+  padding: 4px 7px;
+  border-radius: 5px;
+  font:
+    10px system-ui,
+    sans-serif;
+  white-space: nowrap;
+}
+#tutor-open {
+  display: block;
+  margin-top: 15px;
+  color: var(--green);
+}
+#tutor-model {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+}
+.tutor-messages {
+  max-height: 350px;
+  overflow: auto;
+  margin: 15px 0;
+  display: grid;
+  gap: 12px;
+}
+.tutor-message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--soft);
+  padding: 14px 16px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.tutor-message.user {
+  background: var(--bg);
+  margin-left: 25px;
+}
+.tutor-message strong {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-bottom: 7px;
 }

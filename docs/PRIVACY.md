@@ -25,3 +25,11 @@ Malformed stored data pauses saving instead of replacing the bytes. Export the o
 The optional server binds only to 127.0.0.1. It accepts loopback Host values and same-origin recognition requests. PNG uploads are bounded at 8 MB. A fixed Swift helper processes a task-specific temporary file with Apple Vision, and the server deletes that temporary directory afterward. It does not send the image to a network service. The helper is compiled into ignored .cache/; it can be rebuilt from source.
 
 Do not expose the localhost companion through a public reverse proxy. The hosted studio offers typed checks and does not call the local server. Native recognition requires macOS and Command Line Tools. Windows/Linux receive an explicit unavailable message.
+
+## Quiet reads and local tutoring
+
+When quiet checking is enabled in the Mac companion, a completed ink change schedules a recognition after a pause. The reading and ink-region markers are transient suggestions. They do not change your transcript until explicit reviewed adoption. New strokes, typing, page changes and disabling the mode invalidate pending results. Combined readings above the 20,000-character transcript limit are rejected before mutation.
+
+The optional tutor calls only http://127.0.0.1:11434/api on the same computer. It lists installed local GGUF text models, excludes remote/cloud metadata, and never requests a model download or reads model credentials. Use `OLLAMA_NO_CLOUD=1 ollama serve` for an explicitly cloud-disabled Ollama service. Your question, up to 8,000 transcript characters and bounded recent conversation form a local request. No tools or executable model-generated code are used. One reply may run at a time, with a 120-second deadline. Replies are labeled unverified; truncated replies are identified and unfinished reasoning is not shown as a final answer.
+
+Tutor conversations are stored per page, up to 40 bounded messages, along with a pending question draft up to 2,000 characters, and included in editable backups. Clear the conversation only after exporting a backup if you want to retain it. The hosted studio does not call localhost services or provide native recognition/tutoring.

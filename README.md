@@ -14,7 +14,8 @@
 - **Practice with a purpose.** Five topic families, progressive hints, worked solutions, real attempt history and spaced review dates. Mistakes lead directly to a relevant topic.
 - **On-device recognition.** The optional Mac companion uses Apple Vision. Review its editable transcript before checking. No model key, paid API or cloud upload.
 - **A durable workspace.** Local autosave, a single saving tab, validated backups, non-destructive imports, PNG export and browser Print / PDF. Corrupt storage pauses saving and preserves original bytes.
-- **Quiet by design.** Optional checks after a typing pause, focus timer, light/dark themes, responsive layouts, keyboard controls and offline use after the first successful load.
+- **Quiet by design.** After a writing pause, the Mac companion reads ink and marks possible issues without replacing your transcript. Review the reading before adopting it. Typed checks, focus timer, themes, keyboard controls and offline use remain available.
+- **Help with the why.** An optional local tutor uses an installed Ollama text model for broader math explanations and follow-up practice. Its replies are labeled unverified guidance and saved with your page.
 
 ### Start in seconds
 
@@ -31,6 +32,29 @@ npm start
 Open **http://127.0.0.1:4319**. No `npm install` is needed to run the app.
 
 Mac recognition additionally needs macOS with Apple Vision and Xcode Command Line Tools (`xcode-select --install`). Click **Read ink**, check the recognized symbols, then **Check my steps**. The first recognition request compiles the small native helper locally. Windows and Linux support the complete ink/typed-check/practice workflow; native recognition is unavailable there. The hosted app does not connect to your localhost companion.
+
+### Quiet ink, with uncertainty visible
+
+Write, then pause. The Mac companion reads the page locally and highlights an OCR-derived region when a supported transition looks wrong. A possible issue is a suggestion about recognized text, not a proven verdict on your handwriting. New strokes, transcript edits and page changes discard stale reads. Your existing transcript is preserved until **Review ink reading → Use reviewed transcript**.
+
+<img src="docs/assets/quiet-ink.png" alt="Actual on-device quiet reading identifies a possible sign error in an ink region while preserving the transcript." width="100%">
+
+### A local tutor for the next question
+
+For broader explanations, run the local companion and [Ollama](https://ollama.com/) with an installed local text model. Open **Ask the local tutor**, select the model, and ask your question. For example, Qwen can help explain a missed chain-rule factor or suggest another exercise. No model is downloaded automatically. Thinking models may take longer to return a final answer; the studio stays usable if you close the panel while it runs. Pending questions are saved with the page. A reply that exceeds the two-minute deadline reports a timeout without discarding the question.
+
+You can use an existing local model, or explicitly download one yourself:
+
+```sh
+ollama pull qwen3:4b
+OLLAMA_NO_CLOUD=1 ollama serve
+```
+
+The example model occupies about 2.5 GB in the tested installation. Model choice is yours; Syllune lists compatible installed models. If Ollama is already running, use that local service instead of starting another. The tested service was Ollama 0.34.4. No model weights are included in this repository.
+
+Questions, this page’s transcript and recent conversation go only to the fixed loopback Ollama endpoint. Remote/cloud model metadata is rejected. The model’s response is **fallible guidance**, separate from exact checking. Your per-page conversation is included in JSON backups. The hosted app does not provide the local tutor.
+
+<img src="docs/assets/local-tutor.png" alt="Actual local Qwen reply explains a chain-rule mistake and is explicitly labeled unverified guidance." width="100%">
 
 ### What a check means
 
@@ -63,16 +87,18 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-`npm test` covers exact checking, all 504 generator seed residues across five topics, backup validation, stale-save protection and local HTTP boundaries. The browser suite exercises drawing/history/selection, images, exports, persistence, practice, backup import, multi-tab protection, malformed-storage recovery, offline checking and mobile layout. GitHub Actions repeats these checks before publishing Pages. See [verification evidence](docs/VERIFICATION.md).
+`npm test` covers exact checking, all 504 generator seed residues across five topics, backup validation, stale-save protection and local HTTP boundaries. The browser suites exercise drawing/history/selection, images, exports, persistence, practice, backup import, multi-tab protection, malformed-storage recovery, offline checking and mobile layout. Fixture transports also test quiet-reading cancellation, explicit adoption, OCR/tutor concurrency and saved conversation labels; real native OCR and a local Qwen reply were separately exercised. GitHub Actions repeats these checks before publishing Pages. See [verification evidence](docs/VERIFICATION.md).
 
 ```text
 web/engine.js       exact rational polynomial checker
 web/ink.js          pressure ink, selection and page history
 web/storage.js      bounded versioned snapshots and safe imports
 web/practice.js     exercises, hints and review scheduling
+web/quiet-ink.js    cancellable, uncertain ink-read suggestions
+local-tutor.mjs     bounded installed-local-model guidance
 web/app.js          accessible studio flows and writer lock
 server.mjs          localhost server and bounded recognition API
 native/Recognize.swift  on-device Apple Vision helper
 ```
 
-Created by **Nazeeh**. Source and original visual assets are available under [MIT](LICENSE). Playwright is development-only tooling under Apache-2.0; Apple Vision is a system framework supplied with macOS.
+Created by **Nazeeh**. Source and original visual assets are available under [MIT](LICENSE). Playwright is development-only tooling under Apache-2.0; Apple Vision is a system framework supplied with macOS. Optional Ollama/models retain their own licenses; model weights are not bundled.
