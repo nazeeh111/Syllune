@@ -1,1 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600"><defs><pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#d4f0c0" opacity=".12"/></pattern></defs><rect width="1600" height="600" rx="26" fill="#153f37"/><rect width="1600" height="600" fill="url(#dots)"/><path d="M110 63 120 88 145 98 120 108 110 133 100 108 75 98 100 88Z" fill="#d4f0c0"/><circle cx="110" cy="98" r="9" fill="#153f37"/><text x="165" y="117" fill="#f7f8f3" font-family="system-ui,sans-serif" font-size="45" font-weight="600" letter-spacing="-2">syllune<tspan fill="#9ac78b">.</tspan></text><text x="80" y="262" fill="#f7f8f3" font-family="system-ui,sans-serif" font-size="76" font-weight="400" letter-spacing="-3">Make the next</text><text x="80" y="353" fill="#d4f0c0" font-family="system-ui,sans-serif" font-size="76" font-weight="400" letter-spacing="-3">step click.</text><text x="83" y="423" fill="#b7cdc1" font-family="system-ui,sans-serif" font-size="24">Private ink. Exact checks. Practice that sticks.</text><text x="83" y="522" fill="#b7cdc1" font-family="system-ui,sans-serif" font-size="18">BY NAZEEH  /  OPEN SOURCE  /  ON YOUR DEVICE</text><g transform="translate(947 105) rotate(-4)"><rect width="544" height="387" rx="20" fill="#fffef9"/><path d="M40 72H504M40 149H504M40 226H504M40 303H504" stroke="#dde5dc"/><g font-family="Georgia,serif" font-size="40" fill="#213b37" font-style="italic"><text x="65" y="116">2x + 6 = 14</text><text x="65" y="193" fill="#a84724">2x = 20</text><text x="65" y="270">x = 10</text></g><rect x="270" y="151" width="220" height="61" rx="9" fill="#fff1df" stroke="#e9cbad"/><text x="287" y="177" fill="#a84724" font-family="system-ui,sans-serif" font-size="16">One more look.</text><text x="287" y="196" fill="#61736d" font-family="system-ui,sans-serif" font-size="12">Check the subtraction.</text><path d="M215 175Q240 160 260 177" fill="none" stroke="#a84724" stroke-width="2"/><text x="40" y="356" fill="#61736d" font-family="system-ui,sans-serif" font-size="14">Keep the thinking. Lose the guesswork.</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560">
+  <defs><pattern id="rules" width="32" height="48" patternUnits="userSpaceOnUse"><path d="M0 47.5h32" stroke="#d4ddef"/></pattern></defs>
+  <rect width="1600" height="560" fill="#eef1f7"/>
+  <rect width="20" height="560" fill="#2249b6"/>
+  <text x="76" y="99" font-family="Georgia,serif" font-size="56" letter-spacing="-2" fill="#18243e">syllune<tspan fill="#2249b6">.</tspan></text>
+  <text x="80" y="157" font-family="monospace" font-size="17" letter-spacing="3" fill="#56647c">INK / CHECK / PRACTICE</text>
+  <text x="76" y="268" font-family="Georgia,serif" font-size="64" letter-spacing="-2" fill="#18243e">Work the problem.</text>
+  <text x="76" y="344" font-family="Georgia,serif" font-size="64" letter-spacing="-2" fill="#2249b6">Check the working.</text>
+  <text x="80" y="410" font-family="system-ui,sans-serif" font-size="23" fill="#56647c">Your private mathematics notebook.</text>
+  <text x="80" y="501" font-family="monospace" font-size="16" fill="#56647c">BY NAZEEH · OPEN SOURCE · ON YOUR DEVICE</text>
+  <g transform="translate(855 42)">
+    <rect width="671" height="476" fill="white" stroke="#cdd5e3"/>
+    <path d="M0 0h671" stroke="#2249b6" stroke-width="5"/>
+    <rect x="0" y="47" width="671" height="384" fill="url(#rules)"/>
+    <path d="M48 47v384" stroke="#e5b3bd"/>
+    <text x="30" y="30" font-family="monospace" font-size="14" fill="#56647c">EXAMPLE / FIND THE FIRST WRONG STEP</text>
+    <g font-family="Georgia,serif" font-size="42" font-style="italic">
+      <text x="81" y="122" fill="#18243e">2x + 6 = 14</text>
+      <text x="81" y="218" fill="#ab3046">2x = 20</text>
+      <text x="81" y="314" fill="#56647c">x = 10</text>
+    </g>
+    <path d="M79 230h185" stroke="#ab3046" stroke-width="2"/>
+    <rect x="322" y="164" width="318" height="102" fill="#fff0f2" stroke="#e5b3bd"/>
+    <text x="340" y="196" font-family="system-ui,sans-serif" font-size="18" fill="#ab3046">This step changes the result.</text>
+    <text x="340" y="229" font-family="system-ui,sans-serif" font-size="16" fill="#56647c">Subtract 6 from both sides.</text>
+    <text x="30" y="455" font-family="system-ui,sans-serif" font-size="15" fill="#56647c">Supported steps checked exactly. Limits stay visible.</text>
+  </g>
+</svg>

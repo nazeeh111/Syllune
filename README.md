@@ -1,11 +1,13 @@
-<p align="center"><img src="docs/assets/banner.svg" alt="Syllune. Make the next step click. Private ink, exact checks, practice that sticks." width="100%"></p>
+<p align="center"><img src="docs/assets/banner.svg" alt="Syllune. Work the problem. Check the working. Your private mathematics notebook." width="100%"></p>
 
 <p align="center"><a href="https://nazeeh111.github.io/Syllune/">Open the studio</a> · <a href="https://github.com/nazeeh111/Syllune/releases/latest">Download</a> · <a href="docs/CHECKING.md">Checking guide</a> · <a href="docs/PRIVACY.md">Privacy & recovery</a></p>
-<p align="center"><a href="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml"><img src="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml/badge.svg" alt="Verification and deployment status"></a> <img src="https://img.shields.io/badge/license-MIT-153f37" alt="MIT license"> <img src="https://img.shields.io/badge/runtime_dependencies-0-153f37" alt="Zero runtime dependencies"></p>
+<p align="center"><a href="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml"><img src="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml/badge.svg" alt="Verification and deployment status"></a> <img src="https://img.shields.io/badge/license-MIT-2249b6" alt="MIT license"> <img src="https://img.shields.io/badge/runtime_dependencies-0-2249b6" alt="Zero runtime dependencies"></p>
 
 **Syllune is a private math studio by Nazeeh.** Write by hand, keep your thinking intact, and find the first step that needs another look. Turn that moment into a useful practice session.
 
-<p align="center"><img src="docs/assets/demo.gif" alt="Actual Syllune workflow: catch a sign error, correct the steps, practice with hints and inspect real progress." width="100%"></p>
+<p align="center"><img src="docs/assets/studio.png" alt="Current Syllune notebook: editable ink beside exact sign-error feedback." width="100%"></p>
+
+<p align="center"><img src="docs/assets/demo.gif" alt="Recorded Syllune 1.0.0 workflow: catch a sign error, correct the steps, practice with hints and inspect real progress." width="100%"></p>
 
 ### A studio that stays out of your way
 
@@ -74,7 +76,7 @@ Both transitions hold. Changing the second line to `2x = 20` flags that line. `x
 
 Use **Settings & backups → Export backup** before clearing browser data or changing devices. Import adds copies of notebooks and retains existing notebooks. PNG export contains ink and images; Print / PDF uses the current page. Hosted and local studios have separate browser storage. Private browsing and storage quotas can limit persistence. See [privacy and recovery](docs/PRIVACY.md).
 
-<p align="center"><img src="docs/assets/studio.png" alt="Syllune’s ink notebook and step feedback, with an explicitly labeled example." width="100%"></p>
+The workflow GIF and local OCR/tutor captures above were recorded in 1.0.0. The current notebook screenshot reflects the 1.0.1 visual update.
 
 ### Develop and verify
 

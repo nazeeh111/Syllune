@@ -1,6 +1,6 @@
 {
   "name": "syllune",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "A private math studio with ink, exact step checks and targeted practice.",

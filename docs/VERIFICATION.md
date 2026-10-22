@@ -13,6 +13,15 @@ Verified locally on October 14, 2026 with Node.js 24.14.0, installed Chrome 155 
 | Visual QA | Studio, practice, light/dark and 390-pixel mobile views inspected. README GIF/MP4 records real browser interactions; banner is original SVG. |
 | Independent review | A fresh reviewer identified stale-tab overwrite, out-of-range derivative generation and skipped alternative validation. All were reproduced and fixed, with regression checks. A further focused review reproduced oversized OCR adoption and OCR cleanup resetting tutor state; these also received regression checks. Native visual QA found a shared-selector/overlay-height error; browser geometry checks now pin correct placement across paper styles and 50% zoom. |
 
+## Notebook visual update · October 22, 2026
+
+Version 1.0.1 keeps the checker and notebook format unchanged and updates the studio to white dot paper, cobalt navigation and graphite/red ink. Previously saved strokes retain their own colors. The transcript placeholder now contains four real lines rather than visible backslash-n characters. The service-worker cache version advances with the package version.
+
+- All 33 domain/data/HTTP tests, static checks and both maintained browser suites passed after the update. Browser suites include offline checking, import/recovery and quiet-ink/tutor fixtures.
+- Current-source desktop, dark and 390px mobile renders were inspected. The worked example flags its second line; correcting the transcript produces two correct transitions. Mobile document width stays within the viewport.
+- Public hosting keeps quiet OCR hidden; clicking Read ink explains the Mac companion requirement. The current README screenshot was captured from the static studio, with the notification dismissed naturally.
+- The visual update does not revalidate native handwriting accuracy or local model quality. Earlier native evidence below remains dated evidence.
+
 ## Limits
 
 These checks establish the listed behavior on the tested environments. They do not prove general math correctness, handwriting recognition accuracy across people, or operation on every browser/device. Safari, Firefox, real stylus hardware and Windows/Linux desktop use were not manually exercised locally. The CI browser suite covers Linux Chromium. Native recognition is macOS-only and deliberately separate from static hosting. Syllune does not promise grading correctness or measured speed improvements.

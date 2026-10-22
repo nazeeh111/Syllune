@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#153f37" />
+    <meta name="theme-color" content="#2249b6" />
     <meta
       name="description"
       content="Syllune is your private math studio. Write freely, check supported steps exactly, and practice what needs another look."
@@ -19,11 +19,11 @@
       <aside class="sidebar">
         <a class="brand" href="./" aria-label="Syllune home"
           ><svg viewBox="0 0 40 40" aria-hidden="true">
-            <path d="M20 3 25 15 37 20 25 25 20 37 15 25 3 20 15 15Z" />
-            <circle cx="20" cy="20" r="5" /></svg
+            <path d="M6 3h28v34H6z" />
+            <path d="M12 3v34M17 13h11M17 20h11M17 27h7" fill="none" stroke="var(--panel)" stroke-width="2" /></svg
           ><span>syllune<span class="brand-dot">.</span></span></a
         >
-        <div class="side-caption">A little clarity, every day.</div>
+        <div class="side-caption">Your mathematics notebook.</div>
         <nav class="navigation" aria-label="Main navigation">
           <button class="nav-button active" data-view="studio">
             <span class="nav-icon" aria-hidden="true">▤</span>Studio<span
@@ -113,7 +113,7 @@
           <section id="studio-view" class="view">
             <div class="heading-row">
               <div>
-                <p class="eyebrow">SPACE FOR YOUR THINKING</p>
+                <p class="eyebrow">INK / CHECK / PRACTICE</p>
                 <input
                   id="page-title"
                   aria-label="Page title"
@@ -121,7 +121,7 @@
                   value="A fresh start"
                 />
                 <p class="subtitle">
-                  Write freely. Find the step that needs another look.
+                  Work the problem. Check each transition.
                 </p>
               </div>
               <div class="heading-actions">
@@ -165,9 +165,9 @@
                   <div class="tool-group">
                     <button
                       class="swatch active"
-                      data-color="#213b37"
-                      style="--swatch: #213b37"
-                      aria-label="Forest ink"
+                      data-color="#18243e"
+                      style="--swatch: #18243e"
+                      aria-label="Graphite ink"
                       aria-pressed="true"
                     ></button
                     ><button
@@ -179,9 +179,9 @@
                     ></button
                     ><button
                       class="swatch"
-                      data-color="#a84724"
-                      style="--swatch: #a84724"
-                      aria-label="Terracotta ink"
+                      data-color="#ab3046"
+                      style="--swatch: #ab3046"
+                      aria-label="Red ink"
                       aria-pressed="false"
                     ></button
                     ><label class="sr-only" for="pen-width">Pen width</label
@@ -238,14 +238,13 @@
                     ></canvas>
                     <div id="ink-marks" aria-hidden="true"></div>
                     <div id="blank-hint" class="blank-hint">
-                      <span class="paper-star">✧</span>
-                      <h2>Your thinking goes here.</h2>
+                      <span class="paper-star" aria-hidden="true">ƒ(x)</span>
+                      <h2>A page for working it out.</h2>
                       <p>
-                        A pen, a problem, a fresh page.<br />Or type your steps
-                        in the panel alongside.
+                        Draw on the page or type a line at a time.<br />Try the example to catch a sign error.
                       </p>
                       <button id="blank-example" class="button primary">
-                        See it in action ↗
+                        Open a worked example →
                       </button>
                     </div>
                   </div>
@@ -273,10 +272,10 @@
               </section>
               <aside class="check-panel">
                 <div class="check-header">
-                  <div class="compass" aria-hidden="true">✧</div>
+                  <div class="compass" aria-hidden="true">=</div>
                   <div>
-                    <h2>Your next step</h2>
-                    <p>Clarity without the interruption.</p>
+                    <h2>Check the working</h2>
+                    <p>Exact checks for supported math.</p>
                   </div>
                 </div>
                 <div class="quiet-row">
@@ -309,7 +308,10 @@
                   rows="7"
                   maxlength="20000"
                   spellcheck="false"
-                  placeholder="One step per line. For example:\n2x + 6 = 14\n2x = 8\nx = 4"
+                  placeholder="One step per line:
+2x + 6 = 14
+2x = 8
+x = 4"
                   aria-describedby="transcript-note"
                 ></textarea>
                 <p id="transcript-note" class="small">
@@ -321,11 +323,11 @@
                 </button>
                 <div id="check-results" class="results" aria-live="polite">
                   <div class="check-empty">
-                    <span class="mini-label">LET’S MAKE IT CLICK</span>
-                    <h3>Keep the thinking.<br />Lose the guesswork.</h3>
+                    <span class="mini-label">READ THE RESULT</span>
+                    <h3>Every transition counts.</h3>
                     <p>
-                      Write your steps, then check the chain. We’ll find the
-                      first step to revisit.
+                      A check compares each line with the one before it.
+                      Unsupported steps stay unverified.
                     </p>
                   </div>
                 </div>
@@ -391,7 +393,7 @@
                 </details>
               </section>
               <aside class="practice-aside">
-                <span class="large-star">✧</span>
+                <span class="large-star" aria-hidden="true">∑</span>
                 <h2>Progress is a practice.</h2>
                 <p>
                   Hints help you get unstuck. Your practice history records real

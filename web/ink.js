@@ -5,7 +5,7 @@ export class Ink {
     this.onChange = onChange;
     this.onHistory = onHistory;
     this.tool = 'pen';
-    this.color = '#213b37';
+    this.color = '#18243e';
     this.width = 3;
     this.undoStack = [];
     this.redoStack = [];
@@ -266,8 +266,8 @@ export class Ink {
     if (this.selection) {
       const s = this.selection;
       c.save();
-      c.strokeStyle = '#5e9274';
-      c.fillStyle = '#6ca87a12';
+      c.strokeStyle = '#4265c0';
+      c.fillStyle = '#4265c012';
       c.setLineDash([7, 5]);
       c.lineWidth = 2;
       c.fillRect(s.x, s.y, s.w, s.h);
@@ -283,7 +283,7 @@ export class Ink {
     c.width = 1000;
     c.height = 1200;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#fffef9';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 1000, 1200);
     ctx.drawImage(this.canvas, 0, 0);
     this.selection = selection;
@@ -411,7 +411,7 @@ export function exampleInk(lines = ['2x+6=14', '2x=20', 'x=10']) {
     for (const ch of line) {
       for (const path of glyph[ch] || [])
         strokes.push({
-          color: row === 1 ? '#a84724' : '#213b37',
+          color: row === 1 ? '#ab3046' : '#18243e',
           width: 3.3,
           points: path.map(([a, b]) => ({
             x: x + a * 1.6,

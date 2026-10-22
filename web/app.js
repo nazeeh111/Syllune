@@ -320,14 +320,14 @@ function showView(view) {
 function resetResults() {
   $('check-results').replaceChildren();
   const d = el('div', 'check-empty');
-  d.append(el('span', 'mini-label', 'LET’S MAKE IT CLICK'));
-  const h = el('h3', '', 'Keep the thinking. Lose the guesswork.');
+  d.append(el('span', 'mini-label', 'READ THE RESULT'));
+  const h = el('h3', '', 'Every transition counts.');
   d.append(
     h,
     el(
       'p',
       '',
-      'Write your steps, then check the chain. We’ll find the first step to revisit.',
+      'A check compares each line with the one before it. Unsupported steps stay unverified.',
     ),
   );
   $('check-results').append(d);
