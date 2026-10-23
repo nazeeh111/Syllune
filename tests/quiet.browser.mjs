@@ -61,6 +61,7 @@ try {
   );
   assert.equal(await p.locator('#transcript').inputValue(), original);
   assert.equal(await p.locator('.ink-mark').count(), 1);
+  await p.locator('.drawing-options > summary').click();
   for (const paper of ['dot', 'line', 'blank']) {
     await p.locator('#paper-type').selectOption(paper);
     const geometry = await p.evaluate(() => {
@@ -73,6 +74,7 @@ try {
       `Ink region must follow canvas, ${paper}: ${JSON.stringify(geometry)}`,
     );
   }
+  if (await p.locator('.drawing-options').getAttribute('open') !== null) await p.keyboard.press('Escape');
   await p.locator('#zoom-out').click();
   await p.locator('#zoom-out').click();
   const zoomed = await p.evaluate(() => {
@@ -133,6 +135,7 @@ try {
     });
   });
   p.once('dialog', (d) => d.accept());
+  await p.locator('#transcript-editor > summary').click();
   await p.locator('#recognize').click();
   await p.locator('#tutor-open').click();
   await p.waitForFunction(() => !document.querySelector('#tutor-ask').disabled);

@@ -1,6 +1,6 @@
 @import url('./fonts.css');
 :root {
-  --bg: #eef1f7;
+  --bg: #f0f0f8;
   --panel: #fff;
   --paper: #ffffff;
   --ink: #18243e;
@@ -380,16 +380,18 @@ p {
 }
 .studio-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 22px;
-  align-items: start;
-}
-.paper-panel {
+  grid-template-columns: minmax(0, 1.3fr) minmax(310px, 1fr);
+  gap: 0;
+  align-items: stretch;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-top: 3px solid var(--accent);
   border-radius: 4px;
-  overflow: hidden;
   box-shadow: var(--shadow);
+}
+.paper-panel {
+  min-width: 0;
+  overflow: hidden;
   background: var(--panel);
 }
 .toolbar {
@@ -456,7 +458,7 @@ p {
   max-width: 63px;
 }
 .canvas-scroll {
-  height: 550px;
+  height: 430px;
   overflow: auto;
   background: var(--paper);
   scrollbar-width: thin;
@@ -485,7 +487,7 @@ p {
 }
 .blank-hint {
   position: absolute;
-  top: 105px;
+  top: 32px;
   left: 20px;
   right: 20px;
   text-align: center;
@@ -534,11 +536,10 @@ p {
   min-width: 22px;
 }
 .check-panel {
+  position: relative;
   background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 21px;
-  border-radius: 4px;
-  box-shadow: var(--shadow);
+  border-left: 1px solid var(--line);
+  padding: 24px;
 }
 .check-header {
   display: flex;
@@ -556,8 +557,9 @@ p {
   color: var(--accent);
 }
 .check-header h2 {
-  font-size: 15px;
-  font-weight: 550;
+  font-family: Georgia, serif;
+  font-size: 25px;
+  font-weight: 400;
   margin: 0 0 5px;
   letter-spacing: -0.3px;
 }
@@ -599,7 +601,7 @@ p {
 textarea {
   width: 100%;
   resize: vertical;
-  min-height: 150px;
+  min-height: 100px;
   max-height: 450px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -619,7 +621,7 @@ textarea::placeholder {
   margin: 7px 0 15px;
 }
 .results {
-  margin-top: 22px;
+  margin: 18px 0;
 }
 .check-empty {
   padding: 16px 0 0;
@@ -1044,10 +1046,10 @@ dialog > p {
 }
 @media (min-width: 1500px) {
   .studio-grid {
-    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(340px, 1fr);
   }
   .canvas-scroll {
-    height: 650px;
+    height: 390px;
   }
 }
 @media (max-width: 1150px) {
@@ -1058,8 +1060,8 @@ dialog > p {
     padding: 26px 16px;
   }
   .studio-grid {
-    grid-template-columns: minmax(0, 1fr) 260px;
-    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 0;
   }
   main {
     padding: 28px 22px;
@@ -1095,7 +1097,7 @@ dialog > p {
     width: 35px;
   }
   .canvas-scroll {
-    height: 510px;
+    height: 330px;
   }
   .app-footer {
     margin-left: 22px;
@@ -1116,7 +1118,7 @@ dialog > p {
     margin: 15px 0;
   }
   .canvas-scroll {
-    height: 480px;
+    height: 300px;
   }
   .practice-layout {
     grid-template-columns: 1fr;
@@ -1184,11 +1186,12 @@ dialog > p {
     font-size: 8px;
   }
   main {
-    padding: 25px 15px 10px;
+    padding: 20px 15px 10px;
   }
   .heading-row {
+    display: block;
     gap: 10px;
-    margin-bottom: 23px;
+    margin-bottom: 18px;
   }
   #page-title,
   h1 {
@@ -1225,10 +1228,10 @@ dialog > p {
     max-width: 50px;
   }
   .canvas-scroll {
-    height: 400px;
+    height: 224px;
   }
   .blank-hint {
-    top: 110px;
+    top: 20px;
   }
   .blank-hint h2 {
     font-size: 21px;
@@ -1435,6 +1438,76 @@ dialog > p {
   color: var(--muted);
   letter-spacing: 1px;
   margin-bottom: 7px;
+}
+
+/* A single notebook spread, with feedback in its transcript margin. */
+.paper-caption { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; min-height: 40px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.paper-caption .text-button { color: var(--accent); }
+.canvas-scroll.expanded { height: min(75vh, 900px); }
+
+.canvas-scroll:focus-visible { outline: 3px solid #426df0; outline-offset: -3px; }
+.toolbar { position: relative; flex-wrap: nowrap; justify-content: space-between; gap: 5px; padding: 8px 12px; }
+.toolbar .tool-group { flex-shrink: 0; }
+.drawing-options { margin-left: auto; }
+.drawing-options summary { list-style: none; cursor: pointer; font-size: 24px; width: 32px; height: 32px; text-align: center; border-radius: 4px; }
+.drawing-options summary::-webkit-details-marker { display: none; }
+.drawing-options[open] summary { background: var(--soft); color: var(--accent); }
+.drawing-options-body { position: absolute; z-index: 3; right: 8px; top: 50px; display: grid; gap: 14px; background: var(--panel); border: 1px solid var(--line); padding: 16px; border-radius: 5px; box-shadow: 0 8px 24px #15294f20; }
+.width-option { display: flex; align-items: center; gap: 12px; }
+.width-option label { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; font-size: 11px; }
+.transcript-editor { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 22px; }
+.transcript-editor > summary { padding: 16px 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; }
+#transcript-summary { font-size: 10px; color: var(--accent); font-weight: 500; }
+.transcript-body { padding: 0 0 18px; }
+.transcript-heading label { font-size: 11px; }
+#transcript { background: var(--panel); border-radius: 3px; font-size: 14px; padding: 12px; line-height: 1.7; }
+.check-panel .small { font-size: 11px; }
+.result-caption { display: block; margin: 0 0 14px; }
+.step-result { border-radius: 2px; border: 0; border-left: 3px solid var(--accent); padding: 16px 18px; }
+.step-result.incorrect, .step-result.unverified { border-color: var(--correction); }
+.step-result .step-line { font-size: 14px; color: var(--ink); margin-bottom: 14px; }
+.step-result h3 { font: 400 23px/1.2 Georgia, serif; letter-spacing: -.4px; margin-bottom: 10px; }
+.step-result p { font-size: 12px; line-height: 1.8; }
+.step-result p + p { margin-top: 8px; }
+.step-result .edit-step { display: block; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.check-empty { border: 0; padding: 0; }
+.check-empty h3 { font-size: 29px; margin: 14px 0; max-width: 260px; }
+.check-empty p { font-size: 12px; }
+.check-header { padding-right: 42px; }
+.quiet-row { position: absolute; top: 23px; right: 23px; flex-direction: column; gap: 3px; margin: 0; font-size: 9px; }
+.scope { font-size: 11px; margin-top: 10px; border: 0; padding-top: 8px; }
+@media (max-width: 950px) {
+  .check-panel { border-left: 0; border-top: 1px solid var(--line); }
+  .heading-actions { flex-direction: row; }
+}
+@media (max-width: 650px) {
+  .heading-actions { margin-top: 14px; gap: 6px; }
+  .heading-actions .button { padding: 8px 10px; font-size: 10px; }
+  .eyebrow { margin-bottom: 8px; }
+  .subtitle { margin-top: 7px; }
+  .toolbar { min-height: 49px; padding: 7px 8px; gap: 0; }
+  .tool { width: 30px; height: 32px; }
+  .toolbar .tool-group { padding-right: 5px; gap: 1px; }
+  .swatch { width: 19px; height: 19px; }
+  .paper-caption { min-height: 34px; padding: 0 12px; }
+  .paper-caption .mini-label { font-size: 8px; }
+  .paper-footer { height: 35px; }
+  .check-panel { padding: 20px; }
+  .check-header { margin: 0; }
+  .check-header h2 { font-size: 24px; }
+  .quiet-row { top: 20px; right: 20px; margin: 0; }
+  .canvas-scroll { height: 224px; }
+
+  .results { margin: 14px 0; }
+  .step-result h3 { font-size: 24px; }
+  .blank-hint .paper-star { display: none; }
+  .blank-hint p { margin-bottom: 8px; }
+  .blank-hint .typed-entry { padding: 4px; }
+}
+@media print {
+  .paper-caption { display: none; }
+  .canvas-scroll.expanded { height: auto; overflow: visible; }
+  .studio-grid { border: 0; box-shadow: none; }
 }
 
 /* The typed route is available beside ink, including on a stacked phone layout. */

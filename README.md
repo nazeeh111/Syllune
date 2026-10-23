@@ -7,7 +7,10 @@
 
 The hosted studio and current source checkout have the notebook interface shown below. The v1.0.0 download has the earlier appearance recorded in the workflow GIF.
 
-<p align="center"><img src="docs/assets/studio.png" alt="Current Syllune notebook: editable ink beside exact sign-error feedback." width="100%"></p>
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/assets/studio-mobile.png">
+  <img src="docs/assets/studio.png" alt="Current Syllune notebook spread: editable working paper beside the typed transcript's exact sign-error feedback; compact phone paper keeps the first incorrect step in reach." width="100%">
+</picture>
 
 <p align="center"><img src="docs/assets/demo.gif" alt="Recorded Syllune 1.0.0 workflow: catch a sign error, correct the steps, practice with hints and inspect real progress." width="100%"></p>
 

@@ -28,10 +28,15 @@ try {
   const p = await context.newPage(),
     errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
+  const fillTranscript = async (text) => {
+    if (!await p.locator('#transcript').isVisible())
+      await p.locator('#transcript-editor > summary').click();
+    await p.locator('#transcript').fill(text);
+  };
   await p.goto(url);
   await p.locator('#example').click();
   assert.equal(await p.locator('.step-result.incorrect').count(), 1);
-  await p.locator('#transcript').fill('2x+6=14\n2x=8\nx=4');
+  await fillTranscript('2x+6=14\n2x=8\nx=4');
   await p.locator('#check').click();
   assert.equal(await p.locator('.step-result.correct').count(), 2);
   const r = await p.locator('#ink').boundingBox();
@@ -72,8 +77,10 @@ try {
   );
   assert.ok(after > before);
   await p.locator('#undo').click();
+  await p.locator('.drawing-options > summary').click();
   await p.locator('#clear-ink').click();
   await p.locator('#confirm-yes').click();
+  await p.keyboard.press('Escape');
   assert.equal(await p.locator('#stroke-count').innerText(), '0 strokes');
   await p.locator('#undo').click();
   assert.equal(await p.locator('#stroke-count').innerText(), '27 strokes');
@@ -98,7 +105,7 @@ try {
   await p.locator('#undo').click();
   assert.equal(await p.locator('#blank-hint').isVisible(), true);
   await p.locator('#page-title').fill('A browser-tested page');
-  await p.locator('#transcript').fill('1/3+1/6\n1/2');
+  await fillTranscript('1/3+1/6\n1/2');
   await p.locator('#check').click();
   assert.equal(await p.locator('.step-result.correct').count(), 1);
   await p.locator('[data-view=practice]').click();
@@ -142,7 +149,7 @@ try {
     await second.locator('#save-status').innerText(),
     'Saving paused',
   );
-  await p.locator('#transcript').fill('x=123');
+  await fillTranscript('x=123');
   await p.locator('#check').click();
   await second.locator('#theme-toggle').click();
   assert.ok(
@@ -155,7 +162,7 @@ try {
   await p.reload();
   await context.setOffline(true);
   await p.reload();
-  await p.locator('#transcript').fill('3x=12\nx=4');
+  await fillTranscript('3x=12\nx=4');
   await p.locator('#check').click();
   assert.equal(await p.locator('.step-result.correct').count(), 1);
   await context.setOffline(false);

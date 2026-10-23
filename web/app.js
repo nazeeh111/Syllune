@@ -132,6 +132,15 @@ mobileLayout.addEventListener('change', () => {
   }
 });
 setSidebarOpen(false);
+function updateTranscriptSummary() {
+  const count = $('transcript').value.split('\n').filter((line) => line.trim()).length;
+  $('transcript-summary').textContent = count ? `${count} ${count === 1 ? 'line' : 'lines'} · Review / edit` : 'Type or review ↓';
+}
+function openTranscript() {
+  $('transcript-editor').open = true;
+  $('transcript').focus();
+  $('transcript').scrollIntoView({ block: 'nearest' });
+}
 function refreshInk() {
   const count = page.strokes.length;
   $('blank-hint').hidden = count > 0 || page.images.length > 0;
@@ -259,6 +268,7 @@ $('apply-reading').onclick = () => {
     return;
   page.transcript = $('recognized-preview').value;
   $('transcript').value = page.transcript;
+  updateTranscriptSummary();
   $('ink-review').close();
   invalidateReading();
   runCheck();
@@ -274,6 +284,7 @@ function selectPage(bookId, pageId) {
   state.activePage = page.id;
   $('page-title').value = page.title;
   $('transcript').value = page.transcript;
+  updateTranscriptSummary();
   $('paper-type').value = page.paper;
   $('paper').className = 'paper ' + page.paper;
   $('breadcrumb').replaceChildren(
@@ -281,6 +292,8 @@ function selectPage(bookId, pageId) {
     el('span', '', '/'),
     document.createTextNode(' Studio'),
   );
+  $('transcript-editor').open = !page.transcript.trim();
+  $('paper-viewport').scrollTop = 0;
   ink.bind(page);
   refreshInk();
   renderNotebooks();
@@ -347,14 +360,14 @@ function showView(view) {
 function resetResults() {
   $('check-results').replaceChildren();
   const d = el('div', 'check-empty');
-  d.append(el('span', 'mini-label', 'READ THE RESULT'));
-  const h = el('h3', '', 'Every transition counts.');
+  d.append(el('span', 'mini-label', 'A SECOND LOOK'));
+  const h = el('h3', '', 'What changed between lines?');
   d.append(
     h,
     el(
       'p',
       '',
-      'A check compares each line with the one before it. Unsupported steps stay unverified.',
+      'Type two or more steps below, then check the transition. Unsupported math stays unverified.',
     ),
   );
   $('check-results').append(d);
@@ -364,6 +377,7 @@ function runCheck() {
   const text = $('transcript').value;
   page.transcript = text;
   persist();
+  updateTranscriptSummary();
   const result = checkWork(text);
   const box = $('check-results');
   box.replaceChildren();
@@ -377,6 +391,7 @@ function runCheck() {
     );
     return;
   }
+  box.append(el('div', 'mini-label result-caption', 'TRANSCRIPT REVIEW'));
   for (let i = 0; i < result.steps.length; i++) {
     const r = result.steps[i];
     if (r.status === 'start') {
@@ -401,7 +416,7 @@ function runCheck() {
     }
     const card = el('div', 'step-result ' + r.status);
     card.append(
-      el('div', 'step-line', `${String(i + 1).padStart(2, '0')} · ${r.line}`),
+      el('div', 'step-line', `Step ${i + 1} · ${r.line}`),
       el('h3', '', r.title),
       el('p', '', r.detail),
     );
@@ -422,6 +437,17 @@ function runCheck() {
       };
       card.append(btn);
     }
+    const edit = el('button', 'text-button edit-step', `Edit step ${i + 1} ↗`);
+    edit.onclick = () => {
+      openTranscript();
+      if ($('transcript').value !== text) return;
+      const lines = text.split('\n');
+      // The engine ignores empty lines. Select the actual nonempty source line.
+      const sourceIndex = lines.map((line, index) => line.trim() ? index : -1).filter((index) => index >= 0)[i];
+      const start = lines.slice(0, sourceIndex).reduce((n, line) => n + line.length + 1, 0);
+      $('transcript').setSelectionRange(start, start + lines[sourceIndex].length);
+    };
+    card.append(edit);
     box.append(card);
   }
   if (result.steps.length === 1)
@@ -854,6 +880,7 @@ $('page-title').oninput = () => {
 $('transcript').oninput = () => {
   invalidateReading();
   page.transcript = $('transcript').value;
+  updateTranscriptSummary();
   page.updated = Date.now();
   delayedSave();
   clearTimeout(quietTimer);
@@ -868,10 +895,30 @@ $('quiet-toggle').onchange = () => {
   clearTimeout(quietTimer);
   persist();
 };
-$('check').onclick = runCheck;
+$('check').onclick = () => {
+  runCheck();
+  $('check-results').scrollIntoView({ block: 'nearest' });
+};
 $('recognize').onclick = recognize;
 $('example').onclick = loadExample;
 $('blank-example').onclick = loadExample;
+document.querySelectorAll('a[href="#transcript"]').forEach((link) => {
+  link.onclick = (event) => { event.preventDefault(); openTranscript(); };
+});
+$('expand-paper').onclick = () => {
+  const expanded = $('expand-paper').getAttribute('aria-expanded') !== 'true';
+  $('expand-paper').setAttribute('aria-expanded', String(expanded));
+  $('expand-paper').textContent = expanded ? 'Compact paper ↙' : 'Expand paper ↗';
+  $('paper-viewport').classList.toggle('expanded', expanded);
+};
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const options = event.target.closest('.drawing-options[open]');
+  if (!options) return;
+  event.preventDefault();
+  options.open = false;
+  options.querySelector('summary').focus();
+});
 document
   .querySelectorAll('[data-view]')
   .forEach((b) => (b.onclick = () => showView(b.dataset.view)));

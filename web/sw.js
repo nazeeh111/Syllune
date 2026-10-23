@@ -1,4 +1,4 @@
-const CACHE = 'syllune-v1.0.1-typed-entry';
+const CACHE = 'syllune-v1.0.1-notebook-composition';
 const ASSETS = [
   './',
   './index.html',

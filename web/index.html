@@ -186,15 +186,7 @@
                       aria-label="Red ink"
                       aria-pressed="false"
                     ></button
-                    ><label class="sr-only" for="pen-width">Pen width</label
-                    ><input
-                      id="pen-width"
-                      type="range"
-                      min="1"
-                      max="8"
-                      value="3"
-                      aria-label="Pen width"
-                    />
+                    >
                   </div>
                   <div class="tool-group history">
                     <button
@@ -213,6 +205,18 @@
                       ↷
                     </button>
                   </div>
+                  <details class="drawing-options">
+                    <summary aria-label="More drawing options">···</summary>
+                    <div class="drawing-options-body">
+                      <div class="width-option"><label class="sr-only" for="pen-width">Pen width</label
+                    ><input
+                      id="pen-width"
+                      type="range"
+                      min="1"
+                      max="8"
+                      value="3"
+                      aria-label="Pen width"
+                    /></div>
                   <div class="tool-group">
                     <button
                       id="insert-image"
@@ -229,8 +233,11 @@
                       <option value="blank">Blank</option>
                     </select>
                   </div>
+                    </div>
+                  </details>
                 </div>
-                <div class="canvas-scroll">
+                <div class="paper-caption"><span class="mini-label">WORKING PAPER</span><button id="expand-paper" class="text-button" aria-expanded="false" aria-controls="paper-viewport">Expand paper ↗</button></div>
+                <div class="canvas-scroll" id="paper-viewport" tabindex="0" aria-label="Scrollable working paper">
                   <div id="paper" class="paper dot">
                     <canvas
                       id="ink"
@@ -243,10 +250,10 @@
                       <span class="paper-star" aria-hidden="true">ƒ(x)</span>
                       <h2>A page for working it out.</h2>
                       <p>
-                        Draw on the page or type a line at a time.<br />Try the example to catch a sign error.
+                        Write freely here. Type your steps for a check.
                       </p>
                       <button id="blank-example" class="button primary">
-                        Open a worked example →
+                        Try a sign-error example →
                       </button>
                       <p><a class="typed-entry" href="#transcript">Type steps instead ↓</a></p>
                     </div>
@@ -254,7 +261,7 @@
                 </div>
                 <div class="paper-footer">
                   <span id="stroke-count">0 strokes</span
-                  ><span>Pen · touch · mouse</span>
+                  ><span>Scroll for more paper</span>
                   <div>
                     <button
                       id="zoom-out"
@@ -277,12 +284,12 @@
                 <div class="check-header">
                   <div class="compass" aria-hidden="true">=</div>
                   <div>
-                    <h2>Check the working</h2>
-                    <p>Exact checks for supported math.</p>
+                    <h2>In the margin</h2>
+                    <p>Exact checks of your step transcript.</p>
                   </div>
                 </div>
                 <div class="quiet-row">
-                  <span><span class="dot"></span> Quiet checking</span
+                  <span>Quiet</span
                   ><label class="switch"
                     ><input
                       id="quiet-toggle"
@@ -300,15 +307,27 @@
                     Review ink reading →
                   </button>
                 </div>
+                <div id="check-results" class="results" aria-live="polite">
+                  <div class="check-empty">
+                    <span class="mini-label">A SECOND LOOK</span>
+                    <h3>What changed between lines?</h3>
+                    <p>
+                      Type two or more steps below, then check the transition. Unsupported math stays unverified.
+                    </p>
+                  </div>
+                </div>
+                <details id="transcript-editor" class="transcript-editor" open>
+                  <summary><span>Step transcript</span><span id="transcript-summary">Type or review ↓</span></summary>
+                  <div class="transcript-body">
                 <div class="transcript-heading">
-                  <label for="transcript">Step transcript</label
+                  <label for="transcript">One step per line</label
                   ><button id="recognize" class="text-button">
                     Read ink ↗
                   </button>
                 </div>
                 <textarea
                   id="transcript"
-                  rows="7"
+                  rows="3"
                   maxlength="20000"
                   spellcheck="false"
                   placeholder="One step per line:
@@ -324,16 +343,8 @@ x = 4"
                 <button id="check" class="button primary full">
                   Check my steps <span>↗</span>
                 </button>
-                <div id="check-results" class="results" aria-live="polite">
-                  <div class="check-empty">
-                    <span class="mini-label">READ THE RESULT</span>
-                    <h3>Every transition counts.</h3>
-                    <p>
-                      A check compares each line with the one before it.
-                      Unsupported steps stay unverified.
-                    </p>
                   </div>
-                </div>
+                </details>
                 <button id="tutor-open" class="text-button">
                   Ask the local tutor →
                 </button>
