@@ -104,6 +104,34 @@ const delayedSave = () => {
   $('save-status').textContent = 'Saving…';
   saveTimer = setTimeout(persist, 200);
 };
+const sidebar = document.querySelector('.sidebar'),
+  mobileMenu = $('mobile-menu'),
+  mobileLayout = matchMedia('(max-width: 650px)');
+let lastFocusedElement = document.activeElement;
+document.addEventListener('focusin', (e) => (lastFocusedElement = e.target));
+function setSidebarOpen(open, { focusEntry = false, returnFocus = false } = {}) {
+  const expanded = mobileLayout.matches && open;
+  sidebar.classList.toggle('open', expanded);
+  sidebar.inert = mobileLayout.matches && !expanded;
+  mobileMenu.setAttribute('aria-expanded', String(expanded));
+  if (expanded && focusEntry) {
+    sidebar.querySelector('[data-view][aria-current="page"]').focus();
+  } else if (mobileLayout.matches && returnFocus) {
+    mobileMenu.focus();
+  }
+}
+mobileLayout.addEventListener('change', () => {
+  // CSS can hide a focused control before the media-query event is delivered.
+  const focused = document.activeElement === document.body
+    ? lastFocusedElement
+    : document.activeElement;
+  const focusInSidebar = sidebar.contains(focused);
+  setSidebarOpen(false, { returnFocus: focusInSidebar });
+  if (!mobileLayout.matches && focused === mobileMenu) {
+    sidebar.querySelector('[data-view][aria-current="page"]').focus();
+  }
+});
+setSidebarOpen(false);
 function refreshInk() {
   const count = page.strokes.length;
   $('blank-hint').hidden = count > 0 || page.images.length > 0;
@@ -314,8 +342,7 @@ function showView(view) {
     renderReviews();
   }
   if (view === 'progress') renderProgress();
-  document.querySelector('.sidebar').classList.remove('open');
-  $('mobile-menu').setAttribute('aria-expanded', 'false');
+  setSidebarOpen(false, { returnFocus: sidebar.contains(document.activeElement) });
 }
 function resetResults() {
   $('check-results').replaceChildren();
@@ -1001,8 +1028,8 @@ $('timer-reset').onclick = () => {
 };
 setInterval(timerTick, 1000);
 $('mobile-menu').onclick = () => {
-  const open = document.querySelector('.sidebar').classList.toggle('open');
-  $('mobile-menu').setAttribute('aria-expanded', open);
+  const open = !sidebar.classList.contains('open');
+  setSidebarOpen(open, { focusEntry: open, returnFocus: !open });
 };
 document.addEventListener('click', (e) => {
   if (
@@ -1010,11 +1037,19 @@ document.addEventListener('click', (e) => {
     !e.target.closest('.sidebar') &&
     !e.target.closest('#mobile-menu')
   ) {
-    document.querySelector('.sidebar').classList.remove('open');
-    $('mobile-menu').setAttribute('aria-expanded', 'false');
+    setSidebarOpen(false, { returnFocus: sidebar.contains(document.activeElement) });
   }
 });
 document.addEventListener('keydown', (e) => {
+  if (
+    e.key === 'Escape' &&
+    sidebar.classList.contains('open') &&
+    !document.querySelector('dialog[open]')
+  ) {
+    e.preventDefault();
+    setSidebarOpen(false, { returnFocus: true });
+    return;
+  }
   const editing = e.target.matches('input,textarea,select,[contenteditable]');
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();

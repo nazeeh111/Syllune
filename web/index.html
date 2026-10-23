@@ -16,7 +16,7 @@
   <body>
     <a class="skip" href="#main">Skip to workspace</a>
     <div class="shell">
-      <aside class="sidebar">
+      <aside class="sidebar" id="notebook-sidebar">
         <a class="brand" href="./" aria-label="Syllune home"
           ><svg viewBox="0 0 40 40" aria-hidden="true">
             <path d="M6 3h28v34H6z" />
@@ -95,6 +95,7 @@
             class="icon-button"
             aria-label="Toggle notebooks"
             aria-expanded="false"
+            aria-controls="notebook-sidebar"
           >
             ☰</button
           ><span id="breadcrumb">My notebook <span>/</span> Studio</span>

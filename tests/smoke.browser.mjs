@@ -164,8 +164,21 @@ try {
   assert.ok(
     await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   );
-  await p.locator('#mobile-menu').click();
-  await p.locator('[data-view=practice]').click();
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
+  await p.keyboard.press('Tab');
+  assert.equal(await p.locator('.skip').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Tab');
+  assert.equal(await p.locator('#mobile-menu').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Enter');
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), false);
+  assert.equal(await p.locator('[data-view=studio]').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Escape');
+  assert.equal(await p.locator('#mobile-menu').getAttribute('aria-expanded'), 'false');
+  assert.equal(await p.locator('#mobile-menu').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Enter');
+  await p.keyboard.press('Tab');
+  assert.equal(await p.locator('[data-view=practice]').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Enter');
   assert.ok(
     await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   );
@@ -173,6 +186,20 @@ try {
     await p.locator('.sidebar').evaluate((e) => e.classList.contains('open')),
     false,
   );
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
+  assert.equal(await p.locator('#mobile-menu').evaluate((e) => e === document.activeElement), true);
+  await p.setViewportSize({ width: 1440, height: 1000 });
+  await p.waitForFunction(() => !document.querySelector('.sidebar').inert);
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), false);
+  assert.equal(await p.locator('[data-view=practice]').evaluate((e) => e === document.activeElement), true);
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.waitForFunction(() => document.querySelector('.sidebar').inert);
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
+  assert.equal(await p.locator('#mobile-menu').evaluate((e) => e === document.activeElement), true);
+  await p.keyboard.press('Enter');
+  await p.locator('#save-status').click();
+  assert.equal(await p.locator('#mobile-menu').getAttribute('aria-expanded'), 'false');
+  assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
   const badContext = await browser.newContext();
   await badContext.addInitScript(() =>
     localStorage.setItem('syllune.workspace.v1', '{"broken":true}'),
