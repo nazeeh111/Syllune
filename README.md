@@ -1,9 +1,11 @@
 <p align="center"><img src="docs/assets/banner.svg" alt="Syllune. Work the problem. Check the working. Your private mathematics notebook." width="100%"></p>
 
-<p align="center"><a href="https://nazeeh111.github.io/Syllune/">Open the studio</a> · <a href="https://github.com/nazeeh111/Syllune/releases/latest">Download</a> · <a href="docs/CHECKING.md">Checking guide</a> · <a href="docs/PRIVACY.md">Privacy & recovery</a></p>
+<p align="center"><a href="https://nazeeh111.github.io/Syllune/">Open the current studio</a> · <a href="#start-in-seconds">Run current source</a> · <a href="https://github.com/nazeeh111/Syllune/releases/tag/v1.0.0">Download v1.0.0</a> · <a href="docs/CHECKING.md">Checking guide</a> · <a href="docs/PRIVACY.md">Privacy & recovery</a></p>
 <p align="center"><a href="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml"><img src="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml/badge.svg" alt="Verification and deployment status"></a> <img src="https://img.shields.io/badge/license-MIT-2249b6" alt="MIT license"> <img src="https://img.shields.io/badge/runtime_dependencies-0-2249b6" alt="Zero runtime dependencies"></p>
 
 **Syllune is a private math studio by Nazeeh.** Write by hand, keep your thinking intact, and find the first step that needs another look. Turn that moment into a useful practice session.
+
+The hosted studio and current source checkout have the notebook interface shown below. The v1.0.0 download has the earlier appearance recorded in the workflow GIF.
 
 <p align="center"><img src="docs/assets/studio.png" alt="Current Syllune notebook: editable ink beside exact sign-error feedback." width="100%"></p>
 
