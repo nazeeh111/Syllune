@@ -1436,3 +1436,9 @@ dialog > p {
   letter-spacing: 1px;
   margin-bottom: 7px;
 }
+
+/* The typed route is available beside ink, including on a stacked phone layout. */
+.heading-actions a.button { color: var(--ink); text-decoration: none; }
+.blank-hint .typed-entry { pointer-events: auto; display: inline-block; padding: 8px; color: #2249b6; text-underline-offset: 3px; }
+#transcript { scroll-margin-top: 90px; }
+.heading-actions { flex-wrap: wrap; }
