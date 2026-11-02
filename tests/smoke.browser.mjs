@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createAppServer } from '../server.mjs';
+import { freshState, newPage, uid, validateBackup } from '../web/storage.js';
 const { chromium } = await import(
   process.env.PLAYWRIGHT_MODULE || 'playwright'
 );
@@ -207,22 +208,90 @@ try {
   await p.locator('#save-status').click();
   assert.equal(await p.locator('#mobile-menu').getAttribute('aria-expanded'), 'false');
   assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
-  const badContext = await browser.newContext();
-  await badContext.addInitScript(() =>
-    localStorage.setItem('syllune.workspace.v1', '{"broken":true}'),
-  );
-  const bad = await badContext.newPage();
-  await bad.goto(url);
-  assert.equal(
-    await bad.evaluate(() => localStorage.getItem('syllune.workspace.v1')),
-    '{"broken":true}',
-  );
-  assert.equal(await bad.locator('#settings').isVisible(), true);
-  assert.equal(await bad.locator('#save-status').innerText(), 'Saving paused');
-  await badContext.close();
+  for (const initialPages of [499, 500]) {
+    for (const action of ['new-page', 'new-book', 'example']) {
+      const workspace = freshState();
+      workspace.notebooks = [];
+      for (let remaining = initialPages; remaining > 0; remaining -= 200)
+        workspace.notebooks.push({
+          id: uid(), title: 'Synthetic notebook',
+          pages: Array.from({ length: Math.min(remaining, 200) }, () => newPage('Synthetic page')),
+        });
+      const lastBook = workspace.notebooks.at(-1);
+      workspace.activeNotebook = lastBook.id;
+      workspace.activePage = lastBook.pages[0].id;
+      const capContext = await browser.newContext({ acceptDownloads: true });
+      await capContext.addInitScript((state) =>
+        localStorage.setItem('syllune.workspace.v1', JSON.stringify(state)), workspace);
+      const cap = await capContext.newPage();
+      await cap.goto(url);
+      const original = await cap.evaluate(() => localStorage.getItem('syllune.workspace.v1'));
+      await cap.locator('#' + action).click();
+      assert.equal(await cap.locator('#page-count').innerText(), '500');
+      assert.equal(await cap.locator('#save-status').innerText(), 'Saved locally');
+      if (initialPages === 500) {
+        assert.match(await cap.locator('#toast').innerText(), /500 pages/);
+        assert.equal(await cap.evaluate(() => localStorage.getItem('syllune.workspace.v1')), original);
+      }
+      await cap.locator('#settings-button').click();
+      const pending = cap.waitForEvent('download');
+      await cap.locator('#backup').click();
+      const saved = join(temp, `capacity-${initialPages}-${action}.json`);
+      await (await pending).saveAs(saved);
+      const backup = validateBackup(await readFile(saved, 'utf8'));
+      assert.equal(backup.notebooks.reduce((n, book) => n + book.pages.length, 0), 500);
+      if (initialPages === 500) assert.deepEqual(backup, JSON.parse(original));
+      await capContext.close();
+    }
+  }
+  for (const corrupt of ['{"broken":true}', '']) {
+    const badContext = await browser.newContext({ acceptDownloads: true });
+    await badContext.addInitScript((raw) =>
+      localStorage.setItem('syllune.workspace.v1', raw), corrupt);
+    const bad = await badContext.newPage();
+    await bad.goto(url);
+    assert.equal(await bad.evaluate(() => localStorage.getItem('syllune.workspace.v1')), corrupt);
+    assert.equal(await bad.locator('#settings').isVisible(), true);
+    assert.equal(await bad.locator('#save-status').innerText(), 'Saving paused');
+    const pending = bad.waitForEvent('download');
+    await bad.locator('#backup').click();
+    const download = await pending;
+    assert.equal(download.suggestedFilename(), 'syllune-recovery-original.json');
+    const saved = join(temp, corrupt ? 'malformed-original.json' : 'empty-original.json');
+    await download.saveAs(saved);
+    assert.equal(await readFile(saved, 'utf8'), corrupt);
+    await bad.getByRole('button', { name: 'Preserve old data & start fresh' }).click();
+    const recovered = await bad.evaluate(() => ({
+      current: localStorage.getItem('syllune.workspace.v1'),
+      originals: Object.keys(localStorage)
+        .filter((key) => key.startsWith('syllune.workspace.v1.recovery.'))
+        .map((key) => localStorage.getItem(key)),
+    }));
+    validateBackup(recovered.current);
+    assert.deepEqual(recovered.originals, [corrupt]);
+    assert.equal(await bad.locator('#save-status').innerText(), 'Saved locally');
+    await badContext.close();
+  }
+  const quotaContext = await browser.newContext();
+  await quotaContext.addInitScript(() => {
+    const put = Storage.prototype.setItem;
+    put.call(localStorage, 'syllune.workspace.v1', '');
+    Storage.prototype.setItem = function (key, value) {
+      if (key.startsWith('syllune.workspace.v1.recovery.'))
+        throw new DOMException('Synthetic recovery capacity failure', 'QuotaExceededError');
+      return put.call(this, key, value);
+    };
+  });
+  const quota = await quotaContext.newPage();
+  await quota.goto(url);
+  await quota.getByRole('button', { name: 'Preserve old data & start fresh' }).click();
+  assert.equal(await quota.evaluate(() => localStorage.getItem('syllune.workspace.v1')), '');
+  assert.equal(await quota.locator('#save-status').innerText(), 'Saving paused');
+  assert.match(await quota.locator('#settings-status').innerText(), /Synthetic recovery capacity failure/);
+  await quotaContext.close();
   assert.deepEqual(errors, []);
   console.log(
-    'PASS: exact feedback, ink/history/selection, PNG/image import, persistence, practice/progress, backup import, multi-tab guard, recovery, offline use and mobile layout.',
+    'PASS: exact feedback, ink/history/selection, PNG/image import, persistence, practice/progress, backup import, multi-tab guard, recovery, workspace capacity, offline use and mobile layout.',
   );
 } finally {
   await browser?.close();

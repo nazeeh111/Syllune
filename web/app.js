@@ -453,7 +453,14 @@ function runCheck() {
   if (result.steps.length === 1)
     box.append(el('p', 'small', 'Add a second line to check a transition.'));
 }
+function canCreatePage() {
+  const total = state.notebooks.reduce((count, notebook) => count + notebook.pages.length, 0);
+  if (total < 500) return true;
+  toast('Workspace limit: 500 pages. Existing pages and saved work are unchanged.');
+  return false;
+}
 function loadExample() {
+  if (!canCreatePage()) return;
   if (book.pages.length >= 200)
     return toast('This notebook is full. Create another notebook.');
   const p = newPage('Example · sign check');
@@ -852,6 +859,7 @@ $('tutor-clear').onclick = () => {
   persist();
 };
 $('new-book').onclick = () => {
+  if (!canCreatePage()) return;
   if (state.notebooks.length >= 50)
     return toast(
       'Workspace limit: 50 notebooks. Export a backup to keep your work portable.',
@@ -865,6 +873,7 @@ $('new-book').onclick = () => {
   selectPage(b.id, b.pages[0].id);
 };
 $('new-page').onclick = () => {
+  if (!canCreatePage()) return;
   if (book.pages.length >= 200)
     return toast('Notebook limit: 200 pages. Create another notebook.');
   const p = newPage();
@@ -998,15 +1007,16 @@ $('theme-toggle').onclick = () => {
   persist();
 };
 $('backup').onclick = () => {
+  const hasRecovery = typeof recoveryRaw === 'string';
   download(
-    new Blob([recoveryRaw || JSON.stringify(state, null, 2)], {
+    new Blob([hasRecovery ? recoveryRaw : JSON.stringify(state, null, 2)], {
       type: 'application/json',
     }),
-    recoveryRaw
+    hasRecovery
       ? 'syllune-recovery-original.json'
       : `syllune-backup-${new Date().toISOString().slice(0, 10)}.json`,
   );
-  $('settings-status').textContent = recoveryRaw
+  $('settings-status').textContent = hasRecovery
     ? 'Original stored bytes exported. Keep them safe.'
     : 'Backup exported. Keep a copy outside this browser.';
 };
@@ -1149,7 +1159,7 @@ if (loadError) {
         throw Error(
           'Saved bytes changed. Export this copy and reload before recovery.',
         );
-      if (recoveryRaw)
+      if (typeof recoveryRaw === 'string')
         localStorage.setItem(
           STORAGE_KEY + '.recovery.' + Date.now(),
           recoveryRaw,
