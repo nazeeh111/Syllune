@@ -1,11 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { freshState, validateBackup, mergeBackup } from '../web/storage.js';
+import { freshState, validateBackup, mergeBackup, loadState } from '../web/storage.js';
 import { makeProblem, gradeAnswer, scheduleReview } from '../web/practice.js';
 test('new workspace has no invented activity', () => {
   const s = freshState();
   assert.equal(s.attempts.length, 0);
   assert.equal(s.notebooks[0].pages.length, 1);
+});
+test('only an absent workspace bypasses backup validation', () => {
+  let writes = 0;
+  const storage = (raw) => ({
+    getItem: () => raw,
+    setItem: () => writes++,
+  });
+  assert.equal(loadState(storage(null)).notebooks.length, 1);
+  for (const raw of ['', ' ', '{"broken":true}'])
+    assert.throws(() => loadState(storage(raw)), raw || 'empty stored value');
+  const valid = freshState();
+  assert.deepEqual(loadState(storage(JSON.stringify(valid))), valid);
+  assert.equal(writes, 0);
 });
 test('backup round-trip and merge retain both workspaces', () => {
   const a = freshState(),

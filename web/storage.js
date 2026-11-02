@@ -200,7 +200,7 @@ export function mergeBackup(current, incoming) {
 }
 export function loadState(storage) {
   const raw = storage.getItem(STORAGE_KEY);
-  if (!raw) return freshState();
+  if (raw === null) return freshState();
   return validateBackup(raw);
 }
 export function saveState(storage, state, expectedRaw) {
