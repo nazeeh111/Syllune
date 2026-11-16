@@ -83,3 +83,27 @@ test('combined reading respects the workspace transcript limit', () =>
       }),
     /20,000/,
   ));
+test('manual read works with quiet disabled and is canceled by a later edit', async () => {
+  let finish, signal;
+  const q = new QuietInk({ capture: async () => 'captured image', recognize: (_, s) => {
+    signal = s; return new Promise((resolve) => { finish = resolve; });
+  }, onResult: () => assert.fail('manual result must be reviewed by its caller') });
+  q.stop();
+  const pending = q.readNow();
+  await tick();
+  q.invalidate();
+  assert.equal(signal.aborted, true);
+  finish({ lines: [{ text: 'x=2' }] });
+  assert.equal(await pending, undefined);
+  q.recognize = async () => ({ lines: [{ text: 'x=3' }] });
+  assert.equal((await q.readNow()).text, 'x=3');
+});
+test('cancel during capture prevents a recognition request', async () => {
+  let finish, calls = 0;
+  const q = new QuietInk({ capture: () => new Promise((resolve) => { finish = resolve; }),
+    recognize: async () => { calls++; return { lines: [] }; }, onResult: () => {} });
+  const pending = q.readNow();
+  q.invalidate(); finish('old image');
+  assert.equal(await pending, undefined);
+  assert.equal(calls, 0);
+});

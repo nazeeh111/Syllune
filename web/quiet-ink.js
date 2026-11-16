@@ -74,24 +74,33 @@ export class QuietInk {
     const revision = this.revision;
     this.timer = setTimeout(() => this.read(revision), this.delay);
   }
-  async read(revision) {
-    if (!this.enabled || revision !== this.revision) return;
+  async readNow() {
+    this.invalidate();
+    return this.read(this.revision, true);
+  }
+  async read(revision, manual = false) {
+    if ((!manual && !this.enabled) || revision !== this.revision) return;
     const controller = new AbortController();
     this.controller = controller;
     try {
       const image = await this.capture();
       if (revision !== this.revision || controller.signal.aborted) return;
-      this.onStart();
+      if (!manual) this.onStart();
       const data = await this.recognize(image, controller.signal);
       if (
-        this.enabled &&
+        (manual || this.enabled) &&
         revision === this.revision &&
         !controller.signal.aborted
-      )
-        this.onResult(assessRecognition(data));
+      ) {
+        const result = assessRecognition(data);
+        if (manual) return result;
+        this.onResult(result);
+      }
     } catch (e) {
-      if (!controller.signal.aborted && revision === this.revision)
+      if (!controller.signal.aborted && revision === this.revision) {
+        if (manual) throw e;
         this.onError(e);
+      }
     } finally {
       if (this.controller === controller) this.controller = null;
     }

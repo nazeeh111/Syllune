@@ -25,7 +25,7 @@ npm start
 
 Open **http://127.0.0.1:4319**. No `npm install` is needed to run the app.
 
-Mac recognition additionally needs macOS with Apple Vision and Xcode Command Line Tools (`xcode-select --install`). Click **Read ink**, check the recognized symbols, then **Check my steps**. The first recognition request compiles the small native helper locally. Windows and Linux support the complete ink/typed-check/practice workflow; native recognition is unavailable there. The hosted app does not connect to your localhost companion.
+Mac recognition additionally needs macOS with Apple Vision and Xcode Command Line Tools (`xcode-select --install`). Click **Read ink**, review and edit the suggested transcript, choose **Use reviewed transcript**, then **Check my steps**. Changing the page, ink or typed transcript cancels an obsolete reading. The first recognition request compiles the small native helper locally. Windows and Linux support the complete ink/typed-check/practice workflow; native recognition is unavailable there. The hosted app does not connect to your localhost companion.
 
 ## A studio that stays out of your way
 

@@ -1,15 +1,13 @@
 import { checkWork } from './engine.js';
-import { QuietInk, assessRecognition } from './quiet-ink.js';
+import { QuietInk } from './quiet-ink.js';
 import { Ink, exampleInk } from './ink.js';
 import {
   freshState,
   newPage,
   uid,
-  loadState,
-  saveState,
+  NotebookSession,
   mergeBackup,
   validateBackup,
-  STORAGE_KEY,
 } from './storage.js';
 import {
   TOPICS,
@@ -27,7 +25,6 @@ const $ = (id) => document.getElementById(id),
 let state,
   loadError,
   recoveryRaw,
-  expectedRaw,
   savingPaused = false,
   writerAvailable = false;
 // Hold one origin-scoped writer lock for the life of this page. Other tabs can export their copy.
@@ -42,18 +39,15 @@ if (navigator.locks)
       .catch(() => resolve());
   });
 if (!writerAvailable) savingPaused = true;
+let notebook;
 try {
-  expectedRaw = localStorage.getItem(STORAGE_KEY);
-} catch {}
-try {
-  state = loadState(localStorage);
+  notebook = new NotebookSession(localStorage);
+  state = notebook.open();
 } catch (e) {
   state = freshState();
   loadError = e.message;
   savingPaused = true;
-  try {
-    recoveryRaw = localStorage.getItem(STORAGE_KEY);
-  } catch {}
+  recoveryRaw = notebook?.recoveryBytes;
 }
 let book,
   page,
@@ -85,8 +79,7 @@ function persist() {
     return false;
   }
   try {
-    saveState(localStorage, state, expectedRaw);
-    expectedRaw = localStorage.getItem(STORAGE_KEY);
+    notebook.save(state);
     $('save-status').textContent = 'Saved locally';
     return true;
   } catch (e) {
@@ -259,14 +252,19 @@ $('apply-reading').onclick = () => {
     return toast(
       'Keep the reviewed transcript within 20,000 characters before using it.',
     );
+  const reviewed = lastReading;
+  const target = page;
+  const text = $('recognized-preview').value;
   if (
-    page.transcript &&
+    target.transcript &&
     !confirm(
       'Replace this page’s existing transcript with the reading you reviewed?',
     )
   )
     return;
-  page.transcript = $('recognized-preview').value;
+  if (lastReading !== reviewed || page !== target || quiet.revision !== reviewed.revision || $('recognized-preview').value !== text)
+    return toast('The page changed while confirmation was open. Read and review it again.');
+  page.transcript = text;
   $('transcript').value = page.transcript;
   updateTranscriptSummary();
   $('ink-review').close();
@@ -667,50 +665,20 @@ function timerTick() {
   }
 }
 async function recognize() {
-  invalidateReading();
-  const revision = quiet.revision;
   if (ocrPending) return;
   if (!ocrAvailable)
-    return toast(
-      'For on-device recognition, run npm start on a Mac and open the local studio. Here you can type your transcript.',
-    );
+    return toast('For on-device recognition, run npm start on a Mac and open the local studio. Here you can type your transcript.');
+  invalidateReading();
   ocrPending = true;
   $('recognize').disabled = true;
   $('recognize').textContent = 'Reading…';
   const target = page;
   try {
-    const blob = await ink.blob();
-    const res = await fetch('./api/recognize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'image/png' },
-      body: blob,
-      signal: AbortSignal.timeout(120000),
-    });
-    const data = await res.json();
-    if (!res.ok) throw Error(data.error || 'Recognition unavailable.');
-    if (page !== target || quiet.revision !== revision)
-      throw Error(
-        'The ink or transcript changed while reading. Recognized text was not applied.',
-      );
-    const text = assessRecognition(data).text;
-    if (!text)
-      throw Error(
-        'No readable text found. Try larger, clearer writing, or type the steps.',
-      );
-    if (
-      target.transcript &&
-      !confirm(
-        'Replace this page’s transcript with recognized text? Your ink will stay.',
-      )
-    )
-      return;
-    target.transcript = text.slice(0, 20000);
-    $('transcript').value = target.transcript;
-    resetResults();
-    persist();
-    toast(
-      'Recognition is a suggestion. Review each symbol, then check your steps.',
-    );
+    const result = await quiet.readNow();
+    if (!result || page !== target) return;
+    if (!result.text) throw Error('No readable text found. Try larger, clearer writing, or type the steps.');
+    renderInkSuggestion(result);
+    $('review-reading').click();
   } catch (e) {
     toast(e.message);
   } finally {
@@ -889,6 +857,7 @@ $('page-title').oninput = () => {
 $('transcript').oninput = () => {
   invalidateReading();
   page.transcript = $('transcript').value;
+  resetResults();
   updateTranscriptSummary();
   page.updated = Date.now();
   delayedSave();
@@ -1031,8 +1000,7 @@ $('backup-file').onchange = async () => {
     const merged = mergeBackup(state, incoming);
     if (savingPaused)
       throw Error('Resolve the storage recovery warning before importing.');
-    saveState(localStorage, merged, expectedRaw);
-    expectedRaw = localStorage.getItem(STORAGE_KEY);
+    notebook.save(merged);
     state = merged;
     selectPage(merged.notebooks.at(-1).id, merged.notebooks.at(-1).pages[0].id);
     $('settings-status').textContent =
@@ -1155,22 +1123,9 @@ if (loadError) {
     try {
       if (!writerAvailable)
         throw Error('Close other Syllune tabs and reload before recovery.');
-      if (localStorage.getItem(STORAGE_KEY) !== expectedRaw)
-        throw Error(
-          'Saved bytes changed. Export this copy and reload before recovery.',
-        );
-      if (typeof recoveryRaw === 'string')
-        localStorage.setItem(
-          STORAGE_KEY + '.recovery.' + Date.now(),
-          recoveryRaw,
-        );
+      notebook.recover(state);
       savingPaused = false;
-      if (!persist()) {
-        savingPaused = true;
-        throw Error(
-          'Storage is unavailable. Keep exporting your in-memory work.',
-        );
-      }
+      $('save-status').textContent = 'Saved locally';
       recoveryRaw = null;
       recover.remove();
       $('settings-status').textContent =

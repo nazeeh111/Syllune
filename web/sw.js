@@ -1,4 +1,4 @@
-const CACHE = 'syllune-v1.0.2-storage-recovery';
+const CACHE = 'syllune-v1.0.2-reading-review';
 const ASSETS = [
   './',
   './index.html',
