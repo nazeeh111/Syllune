@@ -9,7 +9,7 @@ Write by hand, check supported math steps, and practice the step that needs anot
   <img src="docs/assets/studio-current.png" alt="Syllune built-in sign-error example: working paper beside exact transcript feedback; the phone layout keeps the first incorrect step below the paper." width="100%">
 </picture>
 
-Current source: **1.0.3-dev.0**. These are [actual browser captures](docs/assets/current-capture.json) of the built-in sign-error example. The example supplies its ink; checking uses the typed transcript.
+Current source: **1.0.3-dev.1**. These are [actual browser captures](docs/assets/current-capture.json) of the built-in sign-error example. The example supplies its ink; checking uses the typed transcript.
 
 The hosted studio and current source checkout have this notebook interface. The [v1.0.0 download](https://github.com/nazeeh111/Syllune/releases/tag/v1.0.0) has the earlier appearance shown in the recorded workflow below.
 
@@ -89,7 +89,7 @@ Both transitions hold. Changing the second line to `2x = 20` flags that line. `x
 
 Use **Settings & backups → Export backup** before clearing browser data or changing devices. Import adds copies of notebooks and retains existing notebooks. PNG export contains ink and images; Print / PDF uses the current page. Hosted and local studios have separate browser storage. Private browsing and storage quotas can limit persistence. See [privacy and recovery](docs/PRIVACY.md).
 
-The workflow GIF and local OCR/tutor captures above were recorded in 1.0.0. The current notebook captures show 1.0.3-dev.0; the earlier 1.0.1 images remain in the repository.
+The workflow GIF and local OCR/tutor captures above were recorded in 1.0.0. The current notebook captures show 1.0.3-dev.1; the earlier 1.0.1 images remain in the repository.
 
 ## Develop and verify
 

@@ -682,7 +682,8 @@ async function recognize() {
     if (!result || page !== target) return;
     if (!result.text) throw Error('No readable text found. Try larger, clearer writing, or type the steps.');
     renderInkSuggestion(result);
-    $('review-reading').click();
+    if (!document.querySelector('dialog[open]')) $('review-reading').click();
+    else toast('Ink reading ready. Review it from the page when you finish here.');
   } catch (e) {
     toast(e.message);
   } finally {

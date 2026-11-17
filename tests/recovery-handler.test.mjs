@@ -57,3 +57,26 @@ test('actual delayed save keeps a paused writer visibly paused without schedulin
     assert.equal(calls.filter(x => x[0] === 'schedule').length, paused ? 0 : 1);
   }
 });
+
+test('actual manual reading completion keeps an already open dialog usable and leaves transcript adoption explicit', async () => {
+  for (const modalOpen of [false, true]) {
+    const result = {text: 'x=4'};
+    const target = {id: 'page', transcript: 'x=3'};
+    let reviewsOpened = 0;
+    const nodes = {recognize: {disabled: false, textContent: 'Read ink ↗'},
+      'review-reading': {click() { reviewsOpened++; }}};
+    const context = {ocrPending: false, ocrAvailable: true, page: target,
+      quiet: {readNow: async () => result}, invalidateReading() {},
+      renderInkSuggestion(value) { assert.equal(value, result); },
+      $: id => nodes[id], document: {querySelector: () => modalOpen ? {id: 'tutor'} : null},
+      toast() {}};
+    const start = source.indexOf('async function recognize() {');
+    const end = source.indexOf('function renderTutorMessages', start);
+    assert.ok(start >= 0 && end > start);
+    vm.runInNewContext(source.slice(start, end) + '\nglobalThis.read = recognize;', context);
+    await context.read();
+    assert.equal(reviewsOpened, modalOpen ? 0 : 1);
+    assert.equal(target.transcript, 'x=3');
+    assert.equal(nodes.recognize.disabled, false);
+  }
+});
