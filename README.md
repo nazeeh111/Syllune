@@ -36,7 +36,7 @@ Mac recognition additionally needs macOS with Apple Vision and Xcode Command Lin
 ## A studio that stays out of your way
 
 - **Ink that belongs to you.** Pressure-aware pen, eraser, selection and movement, undo/redo, paper styles, images and page zoom. Organize notebooks and rename pages.
-- **Checks you can inspect.** Exact arithmetic compares supported steps, locates the first incorrect or unverified transition, explains the limit, and leaves later work untouched.
+- **Checks you can inspect.** Exact arithmetic compares supported steps and puts the first incorrect or unverified transition at the top of the margin. **Edit step** selects its source line, and **Show checked working** opens the earlier checks. Later, unresolved steps stay in your transcript.
 - **Practice with a purpose.** Five topic families, progressive hints, worked solutions, real attempt history and spaced review dates. Mistakes lead directly to a relevant topic.
 - **On-device recognition.** The optional Mac companion uses Apple Vision. Review its editable transcript before checking. No model key, paid API or cloud upload.
 - **A durable workspace.** Local autosave, a single saving tab, validated backups, non-destructive imports, PNG export and browser Print / PDF. Paused tabs keep edits in memory and keep their saving warning visible. Corrupt storage pauses saving and preserves original bytes.
@@ -77,7 +77,7 @@ Questions, this page’s transcript and recent conversation go only to the fixed
 
 ## What a check means
 
-Syllune supports exact rational arithmetic, polynomial expressions in **x** through degree 8, linear and quadratic equations over the real numbers, and polynomial derivatives written as `d/dx(...)`, and bounded rational expressions and equations with domain checks.
+Syllune supports exact rational arithmetic, polynomial expressions in **x** through degree 8, linear and quadratic equations over the reals, polynomial derivatives written as `d/dx(...)`, and bounded rational expressions and equations with domain checks.
 
 ```text
 2x + 6 = 14
@@ -87,7 +87,7 @@ x = 4
 
 Both transitions hold. Changing the second line to `2x = 20` flags that line. `x^2 = 4` followed only by `x = 2` flags a lost solution; use `x = -2 or x = 2`.
 
-Simplifying `(x^2-1)/(x-1)` to `x+1` would add an input where the original was undefined. Write `x+1 where x != 1` to keep the domain.
+Simplifying `(x^2-1)/(x-1)` to `x+1` would add an input where the original was undefined. The margin flags that change. Choose **Edit step**, then write `x+1 where x != 1` to keep the domain.
 
 **Unverified means unverified.** General trigonometry, inequalities, multiple variables and nonproportional higher-degree equations need a broader solver. Syllune compares the lines you provide; it does not prove that the starting problem was transcribed correctly. OCR confidence is not mathematical certainty. Read [the full checking guide](docs/CHECKING.md).
 

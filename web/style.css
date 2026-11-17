@@ -661,7 +661,7 @@ textarea::placeholder {
   margin-bottom: 9px;
   color: var(--muted);
 }
-.step-result h3 {
+.step-result h4 {
   font-size: 11px;
   margin-bottom: 6px;
 }
@@ -1462,14 +1462,30 @@ dialog > p {
 .transcript-heading label { font-size: 11px; }
 #transcript { background: var(--panel); border-radius: 3px; font-size: 14px; padding: 12px; line-height: 1.7; }
 .check-panel .small { font-size: 11px; }
-.result-caption { display: block; margin: 0 0 14px; }
+#check-results { scroll-margin-top: 80px; }
+.review-title { margin: 0; font: 400 29px/1.2 Georgia, serif; }
+.review-title:focus-visible, #problem-prompt:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+.review-count { margin: 8px 0 16px; font-size: 13px; color: var(--muted); }
+.review-history { border-bottom: 1px solid var(--line); }
+.review-history > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.review-actions { display: flex; flex-wrap: wrap; column-gap: 16px; }
+.review-actions .text-button { min-height: 40px; margin-top: 4px; font-size: 12px; }
 .step-result { border-radius: 2px; border: 0; border-left: 3px solid var(--accent); padding: 16px 18px; }
 .step-result.incorrect, .step-result.unverified { border-color: var(--correction); }
 .step-result .step-line { font-size: 14px; color: var(--ink); margin-bottom: 14px; }
-.step-result h3 { font: 400 23px/1.2 Georgia, serif; letter-spacing: -.4px; margin-bottom: 10px; }
+.step-result h4 { font: 400 23px/1.2 Georgia, serif; letter-spacing: -.4px; margin: 0 0 10px; }
 .step-result p { font-size: 12px; line-height: 1.8; }
 .step-result p + p { margin-top: 8px; }
-.step-result .edit-step { display: block; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.step-result .edit-step { text-decoration: underline; text-underline-offset: 3px; }
 .check-empty { border: 0; padding: 0; }
 .check-empty h3 { font-size: 29px; margin: 14px 0; max-width: 260px; }
 .check-empty p { font-size: 12px; }
@@ -1499,7 +1515,7 @@ dialog > p {
   .canvas-scroll { height: 224px; }
 
   .results { margin: 14px 0; }
-  .step-result h3 { font-size: 24px; }
+  .step-result h4 { font-size: 24px; }
   .blank-hint .paper-star { display: none; }
   .blank-hint p { margin-bottom: 8px; }
   .blank-hint .typed-entry { padding: 4px; }

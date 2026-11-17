@@ -2,6 +2,8 @@
 
 A verdict compares a transition, not an entire mathematical argument. The starting line is explicitly unverified as a problem statement. Once a line fails or falls outside scope, downstream steps are kept but blocked from green checks until the earlier issue is resolved.
 
+The margin leads with the first line that needs review and counts how many transitions were verified and how many are waiting on that line. **Show checked working** opens the verified prefix and the starting-line note. **Edit step** selects the matching transcript line, including in notebooks with blank lines between steps. The check button and Ctrl / ⌘ + Enter move keyboard focus to the result. Quiet checks announce the summary while keeping focus where you are.
+
 ## Language
 
 Use decimal numbers, fractions, x or X, +, -, *, /, parentheses, and integer powers 0–8. Multiplication can be implicit, as in 2x or 2(x+1). Unary minus follows mathematical precedence: -x^2 means -(x^2). Unicode minus, multiplication, division and superscript 2/3 are normalized. Use one step per line. A derivative expression is written d/dx(polynomial).

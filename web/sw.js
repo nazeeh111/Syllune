@@ -1,4 +1,4 @@
-const CACHE = 'syllune-v1.0.3-dev.1-rational-domain';
+const CACHE = 'syllune-v1.0.3-dev.1-rational-domain-transcript-review';
 const ASSETS = [
   './',
   './index.html',
