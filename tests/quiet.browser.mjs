@@ -134,12 +134,14 @@ try {
       json: { lines: [{ text: '2x+6=14' }, { text: '2x=8' }, { text: 'x=4' }] },
     });
   });
-  p.once('dialog', (d) => d.accept());
   await p.locator('#transcript-editor > summary').click();
   await p.locator('#recognize').click();
   await p.locator('#tutor-open').click();
   await p.waitForFunction(() => !document.querySelector('#tutor-ask').disabled);
   await p.waitForFunction(() => !document.querySelector('#recognize').disabled);
+  assert.equal(await p.locator('#ink-review').isVisible(), false, 'A finished reading must not cover the active tutor');
+  assert.equal(await p.locator('.tutor-message').count(), 2);
+  assert.equal(await p.locator('#transcript').inputValue(), '2x+6=14\n2x=8\nx=4');
   await p
     .locator('#tutor-question')
     .fill('Does my earlier question still work?');
@@ -150,6 +152,12 @@ try {
     { timeout: 3000 },
   );
   await p.getByRole('button', { name: 'Close local tutor' }).click();
+  // The deferred reading remains available for explicit review without adopting it.
+  await p.locator('#review-reading').click();
+  assert.equal(await p.locator('#ink-review').isVisible(), true);
+  assert.equal(await p.locator('#recognized-preview').inputValue(), '2x+6=14\n2x=8\nx=4');
+  await p.getByRole('button', { name: 'Close ink reading' }).click();
+  assert.equal(await p.locator('#transcript').inputValue(), '2x+6=14\n2x=8\nx=4');
   // Recognition finishing after navigation cannot put a suggestion on a different page.
   await p.route('**/api/recognize', async (r) => {
     await new Promise((resolve) => setTimeout(resolve, 200));

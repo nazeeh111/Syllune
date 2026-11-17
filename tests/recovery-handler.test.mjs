@@ -42,3 +42,41 @@ test('failed recovery-copy write retains original bytes and can be retried', () 
   f.recover.onclick();assert.equal(f.values.get(STORAGE_KEY),'{bad');assert.equal(f.values.size,1);assert.equal(f.context.savingPaused,true);
   f.storage.setItem=originalSet;f.recover.onclick();assert.equal(f.context.savingPaused,false);assert.ok([...f.values.values()].includes('{bad'));
 });
+
+test('actual delayed save keeps a paused writer visibly paused without scheduling storage work', () => {
+  for (const paused of [true, false]) {
+    const status = {textContent: paused ? 'Saving paused' : 'Saved locally'};
+    const calls = [];
+    const context = {savingPaused: paused, saveTimer: 7, $: () => status,
+      clearTimeout: id => calls.push(['clear', id]),
+      setTimeout: (fn, delay) => { calls.push(['schedule', delay]); return 8; },
+      persist() { throw Error('test must not execute a storage write'); }};
+    vm.runInNewContext(handler('const delayedSave = () => {', '\n};') + '\nglobalThis.save = delayedSave;', context);
+    context.save();
+    assert.equal(status.textContent, paused ? 'Saving paused' : 'Saving…');
+    assert.equal(calls.filter(x => x[0] === 'schedule').length, paused ? 0 : 1);
+  }
+});
+
+test('actual manual reading completion keeps an already open dialog usable and leaves transcript adoption explicit', async () => {
+  for (const modalOpen of [false, true]) {
+    const result = {text: 'x=4'};
+    const target = {id: 'page', transcript: 'x=3'};
+    let reviewsOpened = 0;
+    const nodes = {recognize: {disabled: false, textContent: 'Read ink ↗'},
+      'review-reading': {click() { reviewsOpened++; }}};
+    const context = {ocrPending: false, ocrAvailable: true, page: target,
+      quiet: {readNow: async () => result}, invalidateReading() {},
+      renderInkSuggestion(value) { assert.equal(value, result); },
+      $: id => nodes[id], document: {querySelector: () => modalOpen ? {id: 'tutor'} : null},
+      toast() {}};
+    const start = source.indexOf('async function recognize() {');
+    const end = source.indexOf('function renderTutorMessages', start);
+    assert.ok(start >= 0 && end > start);
+    vm.runInNewContext(source.slice(start, end) + '\nglobalThis.read = recognize;', context);
+    await context.read();
+    assert.equal(reviewsOpened, modalOpen ? 0 : 1);
+    assert.equal(target.transcript, 'x=3');
+    assert.equal(nodes.recognize.disabled, false);
+  }
+});

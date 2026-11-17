@@ -64,7 +64,7 @@ let book,
   ocrAvailable = false,
   ocrPending = false,
   lastReading = null,
-  tutorPending = false,
+  tutorPending = null,
   tutorPage = null;
 function toast(message) {
   $('toast').textContent = message;
@@ -94,6 +94,10 @@ function persist() {
 }
 const delayedSave = () => {
   clearTimeout(saveTimer);
+  if (savingPaused) {
+    $('save-status').textContent = 'Saving paused';
+    return;
+  }
   $('save-status').textContent = 'Saving…';
   saveTimer = setTimeout(persist, 200);
 };
@@ -102,7 +106,10 @@ const sidebar = document.querySelector('.sidebar'),
   mobileLayout = matchMedia('(max-width: 650px)');
 let lastFocusedElement = document.activeElement;
 document.addEventListener('focusin', (e) => (lastFocusedElement = e.target));
-function setSidebarOpen(open, { focusEntry = false, returnFocus = false } = {}) {
+function setSidebarOpen(
+  open,
+  { focusEntry = false, returnFocus = false } = {},
+) {
   const expanded = mobileLayout.matches && open;
   sidebar.classList.toggle('open', expanded);
   sidebar.inert = mobileLayout.matches && !expanded;
@@ -115,9 +122,10 @@ function setSidebarOpen(open, { focusEntry = false, returnFocus = false } = {}) 
 }
 mobileLayout.addEventListener('change', () => {
   // CSS can hide a focused control before the media-query event is delivered.
-  const focused = document.activeElement === document.body
-    ? lastFocusedElement
-    : document.activeElement;
+  const focused =
+    document.activeElement === document.body
+      ? lastFocusedElement
+      : document.activeElement;
   const focusInSidebar = sidebar.contains(focused);
   setSidebarOpen(false, { returnFocus: focusInSidebar });
   if (!mobileLayout.matches && focused === mobileMenu) {
@@ -126,8 +134,12 @@ mobileLayout.addEventListener('change', () => {
 });
 setSidebarOpen(false);
 function updateTranscriptSummary() {
-  const count = $('transcript').value.split('\n').filter((line) => line.trim()).length;
-  $('transcript-summary').textContent = count ? `${count} ${count === 1 ? 'line' : 'lines'} · Review / edit` : 'Type or review ↓';
+  const count = $('transcript')
+    .value.split('\n')
+    .filter((line) => line.trim()).length;
+  $('transcript-summary').textContent = count
+    ? `${count} ${count === 1 ? 'line' : 'lines'} · Review / edit`
+    : 'Type or review ↓';
 }
 function openTranscript() {
   $('transcript-editor').open = true;
@@ -239,13 +251,14 @@ function renderInkSuggestion(result) {
     $('quiet-status').textContent =
       'No issue found in the reading. Review before relying on it.';
 }
-$('review-reading').onclick = () => {
+function reviewReading() {
   if (!lastReading || lastReading.pageId !== page.id) return;
   quiet.invalidate();
   lastReading.revision = quiet.revision;
   $('recognized-preview').value = lastReading.result.text;
   $('ink-review').showModal();
-};
+}
+$('review-reading').onclick = reviewReading;
 $('apply-reading').onclick = () => {
   if (!lastReading || lastReading.pageId !== page.id) return;
   if ($('recognized-preview').value.length > 20000)
@@ -262,8 +275,15 @@ $('apply-reading').onclick = () => {
     )
   )
     return;
-  if (lastReading !== reviewed || page !== target || quiet.revision !== reviewed.revision || $('recognized-preview').value !== text)
-    return toast('The page changed while confirmation was open. Read and review it again.');
+  if (
+    lastReading !== reviewed ||
+    page !== target ||
+    quiet.revision !== reviewed.revision ||
+    $('recognized-preview').value !== text
+  )
+    return toast(
+      'The page changed while confirmation was open. Read and review it again.',
+    );
   page.transcript = text;
   $('transcript').value = page.transcript;
   updateTranscriptSummary();
@@ -353,7 +373,9 @@ function showView(view) {
     renderReviews();
   }
   if (view === 'progress') renderProgress();
-  setSidebarOpen(false, { returnFocus: sidebar.contains(document.activeElement) });
+  setSidebarOpen(false, {
+    returnFocus: sidebar.contains(document.activeElement),
+  });
 }
 function resetResults() {
   $('check-results').replaceChildren();
@@ -441,9 +463,16 @@ function runCheck() {
       if ($('transcript').value !== text) return;
       const lines = text.split('\n');
       // The engine ignores empty lines. Select the actual nonempty source line.
-      const sourceIndex = lines.map((line, index) => line.trim() ? index : -1).filter((index) => index >= 0)[i];
-      const start = lines.slice(0, sourceIndex).reduce((n, line) => n + line.length + 1, 0);
-      $('transcript').setSelectionRange(start, start + lines[sourceIndex].length);
+      const sourceIndex = lines
+        .map((line, index) => (line.trim() ? index : -1))
+        .filter((index) => index >= 0)[i];
+      const start = lines
+        .slice(0, sourceIndex)
+        .reduce((n, line) => n + line.length + 1, 0);
+      $('transcript').setSelectionRange(
+        start,
+        start + lines[sourceIndex].length,
+      );
     };
     card.append(edit);
     box.append(card);
@@ -452,9 +481,14 @@ function runCheck() {
     box.append(el('p', 'small', 'Add a second line to check a transition.'));
 }
 function canCreatePage() {
-  const total = state.notebooks.reduce((count, notebook) => count + notebook.pages.length, 0);
+  const total = state.notebooks.reduce(
+    (count, notebook) => count + notebook.pages.length,
+    0,
+  );
   if (total < 500) return true;
-  toast('Workspace limit: 500 pages. Existing pages and saved work are unchanged.');
+  toast(
+    'Workspace limit: 500 pages. Existing pages and saved work are unchanged.',
+  );
   return false;
 }
 function loadExample() {
@@ -667,7 +701,9 @@ function timerTick() {
 async function recognize() {
   if (ocrPending) return;
   if (!ocrAvailable)
-    return toast('For on-device recognition, run npm start on a Mac and open the local studio. Here you can type your transcript.');
+    return toast(
+      'For on-device recognition, run npm start on a Mac and open the local studio. Here you can type your transcript.',
+    );
   invalidateReading();
   ocrPending = true;
   $('recognize').disabled = true;
@@ -676,9 +712,16 @@ async function recognize() {
   try {
     const result = await quiet.readNow();
     if (!result || page !== target) return;
-    if (!result.text) throw Error('No readable text found. Try larger, clearer writing, or type the steps.');
+    if (!result.text)
+      throw Error(
+        'No readable text found. Try larger, clearer writing, or type the steps.',
+      );
     renderInkSuggestion(result);
-    $('review-reading').click();
+    if (!document.querySelector('dialog[open]')) $('review-reading').click();
+    else
+      toast(
+        'Ink reading is ready. Close the current panel, then review it before applying.',
+      );
   } catch (e) {
     toast(e.message);
   } finally {
@@ -706,20 +749,32 @@ function renderTutorMessages(target) {
   }
   box.scrollTop = box.scrollHeight;
 }
+function updateTutorControls() {
+  $('tutor-ask').disabled = !!tutorPending || !$('tutor-model').value;
+  $('tutor-question').disabled = !!tutorPending;
+  $('tutor-cancel').hidden = !tutorPending;
+  $('tutor-cancel').disabled =
+    !tutorPending || tutorPending.controller.signal.aborted;
+}
+function pendingTutorStatus() {
+  return tutorPending.pageId === tutorPage?.id
+    ? 'A local reply is still running. Cancel it here, or close this panel and keep writing.'
+    : 'A local reply for another page is still running. Cancel it here, or close this panel and keep writing.';
+}
 async function openTutor() {
   tutorPage = page;
   $('tutor-question').value = page.tutorDraft || '';
   renderTutorMessages(page);
   $('tutor').showModal();
   $('tutor-model').replaceChildren();
-  $('tutor-ask').disabled = true;
+  updateTutorControls();
   if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
     $('tutor-status').textContent =
       'Open the local companion and start Ollama with an installed text model for private tutoring. The hosted studio offers exact supported checks and practice.';
     return;
   }
   $('tutor-status').textContent = tutorPending
-    ? 'A local reply is still running. You can close this panel and keep writing.'
+    ? pendingTutorStatus()
     : 'Looking for installed local models…';
   try {
     const r = await fetch('./api/tutor/models', {
@@ -735,9 +790,10 @@ async function openTutor() {
       option.value = m.name;
       $('tutor-model').append(option);
     }
-    $('tutor-ask').disabled = tutorPending;
-    $('tutor-status').textContent =
-      'Runs on this computer. Replies may be wrong; exact checks remain separate.';
+    updateTutorControls();
+    $('tutor-status').textContent = tutorPending
+      ? pendingTutorStatus()
+      : 'Runs on this computer. Replies may be wrong; exact checks remain separate.';
   } catch (e) {
     $('tutor-status').textContent = e.message;
   }
@@ -746,14 +802,19 @@ async function askTutor() {
   if (tutorPending || !tutorPage) return;
   const question = $('tutor-question').value.trim();
   if (!question) return toast('Write a question first.');
-  const target = tutorPage;
+  let target = tutorPage;
+  const targetId = target.id;
   target.tutorDraft = question;
   persist();
   const model = $('tutor-model').value;
   if (!model) return;
-  tutorPending = true;
-  $('tutor-ask').disabled = true;
-  $('tutor-question').disabled = true;
+  const operation = { controller: new AbortController(), pageId: targetId };
+  const signal = AbortSignal.any([
+    operation.controller.signal,
+    AbortSignal.timeout(125000),
+  ]);
+  tutorPending = operation;
+  updateTutorControls();
   $('tutor-status').textContent =
     'Thinking locally… You can close this panel and keep writing.';
   try {
@@ -768,9 +829,10 @@ async function askTutor() {
           .slice(-12)
           .map(({ role, content }) => ({ role, content })),
       }),
-      signal: AbortSignal.timeout(125000),
+      signal,
     });
     const d = await r.json();
+    signal.throwIfAborted();
     if (!r.ok) throw Error(d.error || 'The local tutor could not finish.');
     if (
       typeof d.answer !== 'string' ||
@@ -779,6 +841,11 @@ async function askTutor() {
       d.local !== true
     )
       throw Error('The local tutor returned an unsupported reply.');
+    // Import retains page IDs but replaces workspace objects. Resolve the live page.
+    target = state.notebooks
+      .flatMap((book) => book.pages)
+      .find((p) => p.id === targetId);
+    if (!target) throw Error('The question’s page is no longer available.');
     target.tutor = [
       ...(target.tutor || []),
       { role: 'user', content: question, at: Date.now() },
@@ -797,13 +864,33 @@ async function askTutor() {
           : 'Local model guidance. Check the reasoning yourself before using it.';
     }
   } catch (e) {
-    $('tutor-status').textContent = e.message;
+    if (tutorPending === operation)
+      $('tutor-status').textContent = operation.controller.signal.aborted
+        ? 'Reply cancelled. The question is kept on its page; no answer was added.'
+        : e.name === 'TimeoutError'
+          ? 'The reply timed out. Your question is kept; try again when ready.'
+          : e.message;
   } finally {
-    tutorPending = false;
-    $('tutor-ask').disabled = !$('tutor-model').value;
-    $('tutor-question').disabled = false;
+    if (tutorPending === operation) {
+      const returnFocus =
+        operation.cancelFocus &&
+        $('tutor').open &&
+        [document.body, $('tutor-cancel')].includes(document.activeElement);
+      tutorPending = null;
+      updateTutorControls();
+      if (returnFocus) $('tutor-question').focus();
+    }
   }
 }
+$('tutor-cancel').onclick = () => {
+  if (!tutorPending) return;
+  tutorPending.cancelFocus = document.activeElement === $('tutor-cancel');
+  tutorPending.controller.abort();
+  $('tutor-status').textContent =
+    'Cancelling reply… The question is kept on its page.';
+  updateTutorControls();
+};
+window.addEventListener('pagehide', () => tutorPending?.controller.abort());
 $('tutor-open').onclick = openTutor;
 $('tutor-ask').onclick = askTutor;
 $('tutor-question').oninput = () => {
@@ -881,12 +968,17 @@ $('recognize').onclick = recognize;
 $('example').onclick = loadExample;
 $('blank-example').onclick = loadExample;
 document.querySelectorAll('a[href="#transcript"]').forEach((link) => {
-  link.onclick = (event) => { event.preventDefault(); openTranscript(); };
+  link.onclick = (event) => {
+    event.preventDefault();
+    openTranscript();
+  };
 });
 $('expand-paper').onclick = () => {
   const expanded = $('expand-paper').getAttribute('aria-expanded') !== 'true';
   $('expand-paper').setAttribute('aria-expanded', String(expanded));
-  $('expand-paper').textContent = expanded ? 'Compact paper ↙' : 'Expand paper ↗';
+  $('expand-paper').textContent = expanded
+    ? 'Compact paper ↙'
+    : 'Expand paper ↗';
   $('paper-viewport').classList.toggle('expanded', expanded);
 };
 document.addEventListener('keydown', (event) => {
@@ -1002,6 +1094,11 @@ $('backup-file').onchange = async () => {
       throw Error('Resolve the storage recovery warning before importing.');
     notebook.save(merged);
     state = merged;
+    if (tutorPage)
+      tutorPage =
+        state.notebooks
+          .flatMap((book) => book.pages)
+          .find((p) => p.id === tutorPage.id) || null;
     selectPage(merged.notebooks.at(-1).id, merged.notebooks.at(-1).pages[0].id);
     $('settings-status').textContent =
       'Imported safely. Existing notebooks were preserved.';
@@ -1062,7 +1159,9 @@ document.addEventListener('click', (e) => {
     !e.target.closest('.sidebar') &&
     !e.target.closest('#mobile-menu')
   ) {
-    setSidebarOpen(false, { returnFocus: sidebar.contains(document.activeElement) });
+    setSidebarOpen(false, {
+      returnFocus: sidebar.contains(document.activeElement),
+    });
   }
 });
 document.addEventListener('keydown', (e) => {
