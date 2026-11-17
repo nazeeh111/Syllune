@@ -1,5 +1,6 @@
-// Exact checks within a deliberately bounded real-polynomial language. No eval.
+// Exact checks within a deliberately bounded real algebra language. No eval.
 const LIMIT_DEGREE = 8;
+const LIMIT_LINE_LENGTH = 10_240;
 const gcd = (a, b) => {
   a = a < 0n ? -a : a;
   b = b < 0n ? -b : b;
@@ -51,7 +52,9 @@ const add = (a, b) =>
     ),
   );
 const neg = (a) => a.map((q) => q.neg());
+const isZero = (p) => p.length === 1 && !p[0].n;
 function mul(a, b) {
+  if (isZero(a) || isZero(b)) return [ZERO];
   if (a.length + b.length - 2 > LIMIT_DEGREE)
     throw Error('Polynomials up to degree 8 are supported.');
   const c = Array(a.length + b.length - 1).fill(ZERO);
@@ -73,7 +76,49 @@ function normalize(s) {
     .replace(/³/g, '^3')
     .trim();
 }
-export function parsePolynomial(input) {
+// Keep exclusions independently of the fraction so cancellation, zero products,
+// and zero powers cannot make a previously undefined input legal.
+function fraction(numerator, denominator = [ONE], excluded = new Set()) {
+  if (denominator.length === 1 && !denominator[0].eq(ONE)) {
+    numerator = numerator.map((q) => q.div(denominator[0]));
+    denominator = [ONE];
+  }
+  return { numerator, denominator, excluded };
+}
+const unite = (a, b) => new Set([...a, ...b]);
+const opposite = (a) => fraction(neg(a.numerator), a.denominator, a.excluded);
+function sumFractions(a, b) {
+  const excluded = unite(a.excluded, b.excluded);
+  if (equal(a.denominator, b.denominator))
+    return fraction(add(a.numerator, b.numerator), a.denominator, excluded);
+  return fraction(
+    add(mul(a.numerator, b.denominator), mul(b.numerator, a.denominator)),
+    mul(a.denominator, b.denominator),
+    excluded,
+  );
+}
+function multiplyFractions(a, b) {
+  return fraction(
+    mul(a.numerator, b.numerator),
+    mul(a.denominator, b.denominator),
+    unite(a.excluded, b.excluded),
+  );
+}
+function divideFractions(a, b, polynomialOnly) {
+  if (isZero(b.numerator)) throw Error('Division by zero is undefined.');
+  if (b.numerator.length > 1 && polynomialOnly)
+    throw Error('Polynomial derivatives require constant denominators.');
+  if (b.numerator.length > 3)
+    throw Error('Divisors can have a numerator of at most degree 2.');
+  const zeros = roots(b.numerator);
+  return fraction(
+    mul(a.numerator, b.denominator),
+    mul(a.denominator, b.numerator),
+    unite(unite(a.excluded, b.excluded), zeros.values),
+  );
+}
+
+function parseFraction(input, polynomialOnly = false) {
   const source = normalize(input);
   if (!source || source.length > 600)
     throw Error('Use an expression between 1 and 600 characters.');
@@ -89,16 +134,16 @@ export function parsePolynomial(input) {
       result = sum();
       if (tokens[i++] !== ')') throw Error('Close every parenthesis.');
     } else if (t === 'x') {
-      result = [ZERO, ONE];
+      result = fraction([ZERO, ONE]);
     } else if (/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(t || '')) {
       if (t.length > 20) throw Error('Use numbers with at most 20 digits.');
       const [whole = '', frac = ''] = t.split('.');
-      result = [
+      result = fraction([
         new Q(BigInt((whole || '0') + frac), 10n ** BigInt(frac.length)),
-      ];
+      ]);
     } else
       throw Error(
-        'Supported: numbers, x, +, -, *, constant division, parentheses and powers 0–8.',
+        'Supported: numbers, x, +, -, *, /, parentheses and powers 0–8.',
       );
     depth--;
     return result;
@@ -110,8 +155,8 @@ export function parsePolynomial(input) {
       const t = tokens[i++];
       if (!/^\d+$/.test(t || '') || Number(t) > 8)
         throw Error('Powers must be whole numbers from 0 to 8.');
-      let p = [ONE];
-      for (let n = 0; n < Number(t); n++) p = mul(p, a);
+      let p = fraction([ONE], [ONE], a.excluded);
+      for (let n = 0; n < Number(t); n++) p = multiplyFractions(p, a);
       a = p;
     }
     return a;
@@ -123,7 +168,7 @@ export function parsePolynomial(input) {
     }
     if (tokens[i] === '-') {
       i++;
-      return neg(unaryBound());
+      return opposite(unaryBound());
     }
     return power();
   };
@@ -140,25 +185,21 @@ export function parsePolynomial(input) {
       if (t === '*' || t === '/') {
         i++;
         const b = unary();
-        if (t === '/') {
-          if (b.length !== 1)
-            throw Error(
-              'Division by x can change the domain; this checker leaves it unverified.',
-            );
-          a = a.map((q) => q.div(b[0]));
-        } else a = mul(a, b);
+        a = t === '/'
+          ? divideFractions(a, b, polynomialOnly)
+          : multiplyFractions(a, b);
       } else if (t === 'x' || t === '(') {
-        a = mul(a, unary());
+        a = multiplyFractions(a, unary());
       } else break;
     }
-    return trim(a);
+    return a;
   };
   const sum = () => {
     let a = product();
     while (tokens[i] === '+' || tokens[i] === '-') {
       const op = tokens[i++],
         b = product();
-      a = add(a, op === '-' ? neg(b) : b);
+      a = sumFractions(a, op === '-' ? opposite(b) : b);
     }
     return a;
   };
@@ -168,6 +209,9 @@ export function parsePolynomial(input) {
       'That notation is not supported. Try one expression or equation per line.',
     );
   return p;
+}
+export function parsePolynomial(input) {
+  return parseFraction(input, true).numerator;
 }
 function format(p) {
   let s = '';
@@ -190,7 +234,9 @@ function differentiate(p) {
 export const derivative = (s) => format(differentiate(parsePolynomial(s)));
 function expression(s) {
   const d = normalize(s).match(/^d\/dx\((.*)\)$/);
-  return d ? differentiate(parsePolynomial(d[1])) : parsePolynomial(s);
+  return d
+    ? fraction(differentiate(parsePolynomial(d[1])))
+    : parseFraction(s);
 }
 function isqrt(n) {
   if (n < 0n) return null;
@@ -226,35 +272,72 @@ function roots(p) {
       ].sort(),
     };
   }
+  // Over Q, sharing one irrational quadratic root implies sharing its conjugate.
   return {
     kind: 'finite',
     values: ['quadratic:' + p.map((q) => q.div(a).str()).join(',')],
   };
 }
-function equation(s) {
-  const parts = s.split(/\s+or\s+/i);
+// Match the keyword, using fixed-width checks for its surrounding whitespace.
+const RESTRICTION = /(?<=\s)where(?=\s)/i;
+const ALTERNATIVE = /(?<=\s)or(?=\s)/i;
+const EXACT_LITERAL = /^\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:\s*\/\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+))?\s*$/;
+function readLine(input) {
+  if (input.length > LIMIT_LINE_LENGTH)
+    throw Error('This line exceeds the 10,240-character limit.');
+  const [body, condition, extra] = input.split(RESTRICTION, 3);
+  const excluded = new Set();
+  if (condition !== undefined) {
+    const match = normalize(condition).match(/^x\s*(?:!=|≠)\s*(.+)$/);
+    if (!match || extra !== undefined)
+      throw Error('Write restrictions as “where x != 1, -2”.');
+    const items = match[1].split(',');
+    if (items.length > 8) throw Error('Use at most 8 explicit exclusions.');
+    for (const item of items) {
+      if (!EXACT_LITERAL.test(item))
+        throw Error('Use a decimal or a fraction for each explicit exclusion.');
+      excluded.add(parsePolynomial(item)[0].str());
+    }
+  }
+  if (!body.includes('=')) {
+    const value = expression(body);
+    return { ...value, excluded: unite(value.excluded, excluded) };
+  }
+  return { solution: equation(body, excluded) };
+}
+const without = (a, b) => [...a].filter((value) => !b.has(value));
+function equation(s, lineExclusions) {
+  const parts = s.split(ALTERNATIVE, 9);
   if (parts.length > 8) throw Error('Use at most 8 alternatives.');
-  let values = [],
-    all = false;
+  const solutions = new Set();
+  let identityExclusions = null;
   for (const part of parts) {
     const sides = part.split('=');
     if (sides.length !== 2 || !sides.every((v) => v.trim()))
       throw Error('Use exactly one equals sign in each equation.');
-    const p = add(expression(sides[0]), neg(expression(sides[1]))),
-      r = roots(p);
+    const difference = sumFractions(
+      expression(sides[0]), opposite(expression(sides[1])),
+    );
+    const excluded = unite(difference.excluded, lineExclusions);
+    const r = roots(difference.numerator);
     if (r.kind === 'higher') {
       if (parts.length > 1)
-        throw Error(
-          'Alternative solutions support equations through degree 2.',
-        );
+        throw Error('Alternative solutions support equations through degree 2.');
+      if (excluded.size)
+        throw Error('Equations with domain exclusions are checked through degree 2.');
       return r;
     }
-    if (r.kind === 'all') all = true;
-    else values.push(...r.values);
+    if (r.kind === 'all') {
+      identityExclusions = identityExclusions === null
+        ? excluded
+        : new Set([...identityExclusions].filter((value) => excluded.has(value)));
+    } else {
+      for (const value of without(r.values, excluded)) solutions.add(value);
+    }
   }
-  return all
-    ? { kind: 'all', values: [] }
-    : { kind: 'finite', values: [...new Set(values)].sort() };
+  return identityExclusions === null
+    ? { kind: 'finite', values: [...solutions].sort() }
+    : { kind: 'all', values: without(identityExclusions, solutions).sort() };
 }
 const proportional = (a, b) =>
   a.length === b.length &&
@@ -264,19 +347,19 @@ const proportional = (a, b) =>
   );
 export function compare(before, after) {
   try {
-    const eq1 = before.includes('='),
-      eq2 = after.includes('=');
-    if (eq1 !== eq2)
+    const a = readLine(before),
+      b = readLine(after);
+    if (Boolean(a.solution) !== Boolean(b.solution))
       throw Error('Keep both lines as equations, or both as expressions.');
-    let ok;
+    const eq1 = Boolean(a.solution);
+    let ok, sameDomain = true;
     if (eq1) {
-      const a = equation(before),
-        b = equation(after);
-      if (a.kind === 'higher' || b.kind === 'higher') {
+      const left = a.solution, right = b.solution;
+      if (left.kind === 'higher' || right.kind === 'higher') {
         if (
-          a.kind === 'higher' &&
-          b.kind === 'higher' &&
-          proportional(a.polynomial, b.polynomial)
+          left.kind === 'higher' &&
+          right.kind === 'higher' &&
+          proportional(left.polynomial, right.polynomial)
         )
           ok = true;
         else
@@ -285,20 +368,32 @@ export function compare(before, after) {
           );
       } else
         ok =
-          a.kind === b.kind &&
-          JSON.stringify(a.values) === JSON.stringify(b.values);
-    } else ok = equal(expression(before), expression(after));
+          left.kind === right.kind &&
+          JSON.stringify(left.values) === JSON.stringify(right.values);
+    } else {
+      sameDomain = a.excluded.size === b.excluded.size
+        && !without(a.excluded, b.excluded).length;
+      ok = sameDomain && (equal(a.denominator, b.denominator)
+        ? equal(a.numerator, b.numerator)
+        : equal(
+          mul(a.numerator, b.denominator), mul(b.numerator, a.denominator),
+        ));
+    }
     return {
       status: ok ? 'correct' : 'incorrect',
       title: ok ? 'This step holds.' : 'This step changes the result.',
       detail: ok
         ? eq1
           ? 'Both lines have the same real solution set.'
-          : 'Both expressions are exactly equal in the supported polynomial language.'
+          : 'Both expressions have the same real domain and agree exactly on it.'
         : eq1
-          ? 'The real solution set changed. Check signs, both sides, and whether any solutions were lost.'
-          : 'The expressions are not equal. Check distribution, coefficients and arithmetic.',
-      hint: hint(before, after),
+          ? 'The real solution set changed. Check signs, both sides, and whether any solutions were added or lost.'
+          : sameDomain
+            ? 'The expressions are not equal. Check distribution, coefficients and arithmetic.'
+            : 'The real domain changed. Keep the original divisor or carry forward rational exclusions with “where x != 1”.',
+      hint: sameDomain
+        ? hint(before.split(RESTRICTION, 1)[0], after.split(RESTRICTION, 1)[0])
+        : 'Find the values that make each original denominator zero.',
     };
   } catch (e) {
     return {
@@ -333,7 +428,7 @@ export function checkWork(text) {
   const steps = lines.map((line, i) => {
     if (!i) {
       try {
-        line.includes('=') ? equation(line) : expression(line);
+        readLine(line);
         return {
           line,
           status: 'start',

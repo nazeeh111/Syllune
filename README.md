@@ -77,7 +77,7 @@ Questions, this page’s transcript and recent conversation go only to the fixed
 
 ## What a check means
 
-Syllune supports exact rational arithmetic, polynomial expressions in **x** through degree 8, linear and quadratic equations over the real numbers, and polynomial derivatives written as `d/dx(...)`.
+Syllune supports exact rational arithmetic, polynomial expressions in **x** through degree 8, linear and quadratic equations over the real numbers, and polynomial derivatives written as `d/dx(...)`, and bounded rational expressions and equations with domain checks.
 
 ```text
 2x + 6 = 14
@@ -87,7 +87,9 @@ x = 4
 
 Both transitions hold. Changing the second line to `2x = 20` flags that line. `x^2 = 4` followed only by `x = 2` flags a lost solution; use `x = -2 or x = 2`.
 
-**Unverified means unverified.** General trigonometry, variable denominators, inequalities, multiple variables and nonproportional higher-degree equations need a broader solver. Syllune compares the lines you provide; it does not prove that the starting problem was transcribed correctly. OCR confidence is not mathematical certainty. Read [the full checking guide](docs/CHECKING.md).
+Simplifying `(x^2-1)/(x-1)` to `x+1` would add an input where the original was undefined. Write `x+1 where x != 1` to keep the domain.
+
+**Unverified means unverified.** General trigonometry, inequalities, multiple variables and nonproportional higher-degree equations need a broader solver. Syllune compares the lines you provide; it does not prove that the starting problem was transcribed correctly. OCR confidence is not mathematical certainty. Read [the full checking guide](docs/CHECKING.md).
 
 ## Keep your work portable
 
@@ -111,7 +113,7 @@ npm run test:browser
 `npm test` covers exact checking, all 504 generator seed residues across five topics, backup validation, stale-save protection and local HTTP boundaries. The browser suites exercise drawing/history/selection, images, exports, persistence, practice, backup import, multi-tab protection, malformed-storage recovery, offline checking and mobile layout. Fixture transports also test quiet-reading cancellation, explicit adoption, OCR/tutor concurrency, saved conversation labels, tutor request cancellation and draft recovery; real native OCR and a local Qwen reply were separately exercised. GitHub Actions repeats these checks before publishing Pages. See [verification evidence](docs/VERIFICATION.md).
 
 ```text
-web/engine.js       exact rational polynomial checker
+web/engine.js       exact algebra and domain checker
 web/ink.js          pressure ink, selection and page history
 web/storage.js      bounded versioned snapshots and safe imports
 web/practice.js     exercises, hints and review scheduling
