@@ -1,0 +1,102 @@
+{
+  "sourceCommit": "62811f5a6a36e0ac3cf62996af2c9db43d762b42",
+  "capturedAt": "2026-11-17T08:18:44.867Z",
+  "browser": "157.0.8103.79",
+  "initialTranscript": "2x + 6 = 14\n2x = 20\nx = 10",
+  "initialResults": "TRANSCRIPT REVIEW\n\n01 \u00b7 Starting point, not a verified answer.\n\nStep 2 \u00b7 2x = 20\nThis step changes the result.\n\nThe real solution set changed. Check signs, both sides, and whether any solutions were lost.\n\nApply the same operation to both sides, then recheck the signs.\n\nPractice this idea \u2192\nEdit step 2 \u2197\n\n03 \u00b7 Waiting for the earlier step to be resolved.",
+  "actualNativeRecognition": {
+    "lines": [
+      {
+        "confidence": 1,
+        "box": {
+          "width": 0.350101806640625,
+          "height": 0.04884798685709646,
+          "x": 0.08994909658032861,
+          "y": 0.1064093398899032
+        },
+        "text": "2X+6=14"
+      },
+      {
+        "box": {
+          "width": 0.2488335113525391,
+          "y": 0.18841770441826622,
+          "height": 0.04904724756876622,
+          "x": 0.08959246807146468
+        },
+        "confidence": 1,
+        "text": "2\u0425=20"
+      },
+      {
+        "confidence": 1,
+        "text": "\u0425=10",
+        "box": {
+          "width": 0.20113684082031252,
+          "x": 0.0874269034231956,
+          "height": 0.05048916180928542,
+          "y": 0.27171808659844887
+        }
+      }
+    ],
+    "engine": "Apple Vision",
+    "local": true
+  },
+  "nativeRecognitionStatus": 200,
+  "reviewDidNotReplaceTranscript": true,
+  "reviewedRecognitionTranscript": "2x + 6 = 14\n2x = 20\nx = 10",
+  "recognitionAdoptedThroughExplicitReview": true,
+  "editStepSelected": "2x = 20",
+  "correctedTranscript": "2x + 6 = 14\n2x = 8\nx = 4",
+  "correctedResults": "TRANSCRIPT REVIEW\n\n01 \u00b7 Starting point, not a verified answer.\n\nStep 2 \u00b7 2x = 8\nThis step holds.\n\nBoth lines have the same real solution set.\n\nEdit step 2 \u2197\nStep 3 \u00b7 x = 4\nThis step holds.\n\nBoth lines have the same real solution set.\n\nEdit step 3 \u2197",
+  "unsupported": "TRANSCRIPT REVIEW\nStep 1 \u00b7 1/x\nStarting line needs review\n\nDivision by x can change the domain; this checker leaves it unverified.\n\nEdit step 1 \u2197\n\n02 \u00b7 Waiting for the earlier step to be resolved.",
+  "practice": {
+    "prompt": "Solve 2x + 8 = 14",
+    "hint": "Subtract 8 from both sides.",
+    "answer": "x=3",
+    "feedback": "That clicks.\n\nSubtract 8: 2x = 6. Divide by 2: x = 3. Substitute to confirm 2 \u00d7 3 + 8 = 14.",
+    "attempts": 1
+  },
+  "backup": {
+    "filename": "worked-notebook.json",
+    "bytes": 15997,
+    "sha256": "cbf08ddbde439b12a4e93235494d303962a2832fad1391e6a6d711a6ab7e82c7",
+    "strokes": 26,
+    "reopenedInFreshContext": true,
+    "inkBytesPreserved": true,
+    "practiceAttemptPreserved": true
+  },
+  "png": {
+    "filename": "worked-ink.png",
+    "sha256": "f6659f015d2e2372357964c25b6e6beff7f3e92eaf60a9aafac43d61f9d00933"
+  },
+  "width": {
+    "viewport": 375,
+    "scroll": 375
+  },
+  "errors": [],
+  "recognitionLimit": "Single bundled synthetic ink example; native OCR confidence is not symbolic correctness or an accuracy study.",
+  "rawRecognitionCheck": {
+    "steps": [
+      {
+        "line": "2X+6=14",
+        "status": "start",
+        "title": "Starting line",
+        "detail": "This is your starting point, not a checked answer."
+      },
+      {
+        "line": "2\u0425=20",
+        "status": "unverified",
+        "title": "Let\u2019s review this notation.",
+        "detail": "That notation is not supported. Try one expression or equation per line.",
+        "hint": "A line outside the checker\u2019s scope is left unverified. You can still keep writing."
+      },
+      {
+        "line": "\u0425=10",
+        "status": "blocked",
+        "title": "Review the earlier step first.",
+        "detail": "Later steps are kept, but are not verified against an unresolved chain."
+      }
+    ],
+    "firstIssue": 1
+  },
+  "tutorModelRequests": 0
+}

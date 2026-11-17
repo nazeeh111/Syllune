@@ -5,11 +5,13 @@ Write by hand, check supported math steps, and practice the step that needs anot
 [Open the current studio](https://nazeeh111.github.io/Syllune/) · [Run current source](#start-in-seconds) · [Checking guide](docs/CHECKING.md) · [Privacy and recovery](docs/PRIVACY.md)
 
 <picture>
-  <source media="(max-width: 600px)" srcset="docs/assets/studio-current-mobile.png">
-  <img src="docs/assets/studio-current.png" alt="Syllune built-in sign-error example: working paper beside exact transcript feedback; the phone layout keeps the first incorrect step below the paper." width="100%">
+  <source media="(max-width: 600px)" srcset="docs/presentation/journey-mobile.png">
+  <img src="docs/presentation/journey.png" alt="A real Syllune notebook journey: the original sign-error ink stays unchanged; local recognition needs explicit review; the exact checker flags 2x=20, then verifies the edited transcript 2x=8 and x=4. A targeted practice attempt and all 26 ink strokes survive an editable backup reopened in a fresh browser context." width="100%">
 </picture>
 
-Current source: **1.0.3-dev.1**. These are [actual browser captures](docs/assets/current-capture.json) of the built-in sign-error example. The example supplies its ink; checking uses the typed transcript.
+**The ink is yours; the verdict belongs to the transcript.** In this actual built-in example, Apple Vision returned a Cyrillic Х in two lines despite reporting confidence 1. We reviewed it into Latin x, checked the first changed solution set, corrected the transcript, practiced the idea and reopened the saved notebook. Editing text left the original ink untouched. [Repeat the worked example, inspect the exact reading, or open its synthetic notebook backup](docs/presentation/README.md).
+
+Current source: **1.0.3-dev.1**. The [full current notebook captures](docs/assets/current-capture.json) remain available; the new [execution record](docs/presentation/journey.json) separates recognition, supported symbolic checks and actual saved artifacts.
 
 The hosted studio and current source checkout have this notebook interface. The [v1.0.0 download](https://github.com/nazeeh111/Syllune/releases/tag/v1.0.0) has the earlier appearance shown in the recorded workflow below.
 
