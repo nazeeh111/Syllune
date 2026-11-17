@@ -37,6 +37,19 @@ try {
   await p.goto(url);
   await p.locator('#example').click();
   assert.equal(await p.locator('.step-result.incorrect').count(), 1);
+  await fillTranscript('(x^2-1)/(x-1)\nx+1');
+  await p.locator('#check').click();
+  assert.match(await p.locator('.step-result.incorrect').innerText(), /domain changed/);
+  const rational = '(x^2-1)/(x-1)\nx+1 where x != 1';
+  await fillTranscript(rational);
+  await p.locator('#check').click();
+  assert.equal(await p.locator('.step-result.correct').count(), 1);
+  await p.reload();
+  assert.equal(await p.locator('#transcript').inputValue(), rational);
+  if (!await p.locator('#check').isVisible())
+    await p.locator('#transcript-editor > summary').click();
+  await p.locator('#check').click();
+  assert.equal(await p.locator('.step-result.correct').count(), 1);
   await fillTranscript('2x+6=14\n2x=8\nx=4');
   await p.locator('#check').click();
   assert.equal(await p.locator('.step-result.correct').count(), 2);
@@ -163,7 +176,7 @@ try {
   await p.reload();
   await context.setOffline(true);
   await p.reload();
-  await fillTranscript('3x=12\nx=4');
+  await fillTranscript('2/(x-1)=4\nx=3/2');
   await p.locator('#check').click();
   assert.equal(await p.locator('.step-result.correct').count(), 1);
   await context.setOffline(false);
@@ -291,7 +304,7 @@ try {
   await quotaContext.close();
   assert.deepEqual(errors, []);
   console.log(
-    'PASS: exact feedback, ink/history/selection, PNG/image import, persistence, practice/progress, backup import, multi-tab guard, recovery, workspace capacity, offline use and mobile layout.',
+    'PASS: exact and rational-domain feedback, ink/history/selection, PNG/image import, persistence, practice/progress, backup import, multi-tab guard, recovery, workspace capacity, offline use and mobile layout.',
   );
 } finally {
   await browser?.close();
