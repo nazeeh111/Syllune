@@ -11,6 +11,8 @@ Write by hand, check supported math steps, and practice the step that needs anot
 
 **The ink is yours; the verdict belongs to the transcript.** In this actual built-in example, Apple Vision returned a Cyrillic Х in two lines despite reporting confidence 1. We reviewed it into Latin x, checked the first changed solution set, corrected the transcript, practiced the idea and reopened the saved notebook. Editing text left the original ink untouched. [Repeat the worked example, inspect the exact reading, or open its synthetic notebook backup](docs/presentation/README.md).
 
+The retained journey and studio captures record their original source versions and hashes. They do not depict the later tutor cancellation integration; its fixture checks are recorded separately in the verification notes.
+
 Current source: **1.0.3-dev.1**. The [full current notebook captures](docs/assets/current-capture.json) remain available; the new [execution record](docs/presentation/journey.json) separates recognition, supported symbolic checks and actual saved artifacts.
 
 The hosted studio and current source checkout have this notebook interface. The [v1.0.0 download](https://github.com/nazeeh111/Syllune/releases/tag/v1.0.0) has the earlier appearance shown in the recorded workflow below.
@@ -58,7 +60,7 @@ Write, then pause. The Mac companion reads the page locally and highlights an OC
 
 ## A local tutor for the next question
 
-For broader explanations, run the local companion and [Ollama](https://ollama.com/) with an installed local text model. Open **Ask the local tutor**, select the model, and ask your question. For example, Qwen can help explain a missed chain-rule factor or suggest another exercise. No model is downloaded automatically. Thinking models may take longer to return a final answer; the studio stays usable if you close the panel while it runs. Pending questions are saved with the page. A reply that exceeds the two-minute deadline reports a timeout without discarding the question.
+For broader explanations, run the local companion and [Ollama](https://ollama.com/) with an installed local text model. Open **Ask the local tutor**, select the model, and ask your question. For example, Qwen can help explain a missed chain-rule factor or suggest another exercise. No model is downloaded automatically. Thinking models may take longer to return a final answer; the studio stays usable if you close the panel while it runs. Pending questions are saved with the page. **Cancel reply** closes the pending request and keeps its question draft; closing the panel alone lets it continue. Reloading or leaving the studio cancels the request without automatically retrying. A reply that exceeds the two-minute deadline reports a timeout without discarding the question.
 
 You can use an existing local model, or explicitly download one yourself:
 
@@ -106,7 +108,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-`npm test` covers exact checking, all 504 generator seed residues across five topics, backup validation, stale-save protection and local HTTP boundaries. The browser suites exercise drawing/history/selection, images, exports, persistence, practice, backup import, multi-tab protection, malformed-storage recovery, offline checking and mobile layout. Fixture transports also test quiet-reading cancellation, explicit adoption, OCR/tutor concurrency and saved conversation labels; real native OCR and a local Qwen reply were separately exercised. GitHub Actions repeats these checks before publishing Pages. See [verification evidence](docs/VERIFICATION.md).
+`npm test` covers exact checking, all 504 generator seed residues across five topics, backup validation, stale-save protection and local HTTP boundaries. The browser suites exercise drawing/history/selection, images, exports, persistence, practice, backup import, multi-tab protection, malformed-storage recovery, offline checking and mobile layout. Fixture transports also test quiet-reading cancellation, explicit adoption, OCR/tutor concurrency, saved conversation labels, tutor request cancellation and draft recovery; real native OCR and a local Qwen reply were separately exercised. GitHub Actions repeats these checks before publishing Pages. See [verification evidence](docs/VERIFICATION.md).
 
 ```text
 web/engine.js       exact rational polynomial checker
