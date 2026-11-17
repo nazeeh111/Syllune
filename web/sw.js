@@ -1,4 +1,4 @@
-const CACHE = 'syllune-v1.0.2-storage-recovery';
+const CACHE = 'syllune-v1.0.3-dev.0-save-state';
 const ASSETS = [
   './',
   './index.html',

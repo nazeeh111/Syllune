@@ -200,7 +200,7 @@ export class Ink {
     this.changed();
   }
   async insertImage(file) {
-    const target = this.page;
+    const target = this.page, generation = this.generation;
     if (file.size > 6_000_000)
       throw Error('Choose an image smaller than 6 MB.');
     if (this.page.images.length >= 10)
@@ -220,7 +220,7 @@ export class Ink {
       img.onerror = j;
       img.src = src;
     });
-    if (this.page !== target)
+    if (this.page !== target || this.generation !== generation)
       throw Error(
         'You changed pages. Select the original page and insert the image again.',
       );

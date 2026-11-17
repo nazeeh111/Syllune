@@ -105,3 +105,23 @@ test('pending tutor questions are bounded and portable in backups', () => {
   s.notebooks[0].pages[0].tutorDraft = 'x'.repeat(2001);
   assert.throws(() => validateBackup(JSON.stringify(s)), /draft/);
 });
+
+test('NotebookSession preserves last saved generation on failed write and refuses foreign edits', async () => {
+  const { NotebookSession, STORAGE_KEY } = await import('../web/storage.js');
+  let raw = null, fail = false;
+  const storage = { getItem: () => raw, setItem: (_, value) => { if (fail) throw Error('quota'); raw = value; } };
+  const session = new NotebookSession(storage), state = session.open();
+  state.notebooks[0].pages[0].transcript = 'x + 1 = 2';
+  session.save(state);
+  const last = raw;
+  state.notebooks[0].pages[0].transcript = 'x = 1';
+  fail = true;
+  assert.throws(() => session.save(state), /quota/);
+  assert.equal(raw, last);
+  fail = false; session.save(state);
+  assert.equal(new NotebookSession(storage).open().notebooks[0].pages[0].transcript, 'x = 1');
+  const external = raw.replace('x = 1', 'x = 9'); raw = external;
+  assert.throws(() => session.save(state), /Another tab/);
+  assert.equal(raw, external);
+  assert.equal(STORAGE_KEY, 'syllune.workspace.v1');
+});

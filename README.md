@@ -5,9 +5,11 @@ Write by hand, check supported math steps, and practice the step that needs anot
 [Open the current studio](https://nazeeh111.github.io/Syllune/) · [Run current source](#start-in-seconds) · [Checking guide](docs/CHECKING.md) · [Privacy and recovery](docs/PRIVACY.md)
 
 <picture>
-  <source media="(max-width: 600px)" srcset="docs/assets/studio-mobile.png">
-  <img src="docs/assets/studio.png" alt="Current Syllune notebook spread: editable working paper beside the typed transcript's exact sign-error feedback; compact phone paper keeps the first incorrect step in reach." width="100%">
+  <source media="(max-width: 600px)" srcset="docs/assets/studio-current-mobile.png">
+  <img src="docs/assets/studio-current.png" alt="Syllune built-in sign-error example: working paper beside exact transcript feedback; the phone layout keeps the first incorrect step below the paper." width="100%">
 </picture>
+
+Current source: **1.0.3-dev.0**. These are [actual browser captures](docs/assets/current-capture.json) of the built-in sign-error example. The example supplies its ink; checking uses the typed transcript.
 
 The hosted studio and current source checkout have this notebook interface. The [v1.0.0 download](https://github.com/nazeeh111/Syllune/releases/tag/v1.0.0) has the earlier appearance shown in the recorded workflow below.
 
@@ -25,7 +27,7 @@ npm start
 
 Open **http://127.0.0.1:4319**. No `npm install` is needed to run the app.
 
-Mac recognition additionally needs macOS with Apple Vision and Xcode Command Line Tools (`xcode-select --install`). Click **Read ink**, check the recognized symbols, then **Check my steps**. The first recognition request compiles the small native helper locally. Windows and Linux support the complete ink/typed-check/practice workflow; native recognition is unavailable there. The hosted app does not connect to your localhost companion.
+Mac recognition additionally needs macOS with Apple Vision and Xcode Command Line Tools (`xcode-select --install`). Click **Read ink**, review and edit the suggested transcript, choose **Use reviewed transcript**, then **Check my steps**. Changing the page, ink or typed transcript cancels an obsolete reading. The first recognition request compiles the small native helper locally. Windows and Linux support the complete ink/typed-check/practice workflow; native recognition is unavailable there. The hosted app does not connect to your localhost companion.
 
 ## A studio that stays out of your way
 
@@ -33,7 +35,7 @@ Mac recognition additionally needs macOS with Apple Vision and Xcode Command Lin
 - **Checks you can inspect.** Exact arithmetic compares supported steps, locates the first incorrect or unverified transition, explains the limit, and leaves later work untouched.
 - **Practice with a purpose.** Five topic families, progressive hints, worked solutions, real attempt history and spaced review dates. Mistakes lead directly to a relevant topic.
 - **On-device recognition.** The optional Mac companion uses Apple Vision. Review its editable transcript before checking. No model key, paid API or cloud upload.
-- **A durable workspace.** Local autosave, a single saving tab, validated backups, non-destructive imports, PNG export and browser Print / PDF. Corrupt storage pauses saving and preserves original bytes.
+- **A durable workspace.** Local autosave, a single saving tab, validated backups, non-destructive imports, PNG export and browser Print / PDF. Paused tabs keep edits in memory and keep their saving warning visible. Corrupt storage pauses saving and preserves original bytes.
 - **Quiet by design.** After a writing pause, the Mac companion reads ink and marks possible issues without replacing your transcript. Review the reading before adopting it. Typed checks, focus timer, themes, keyboard controls and offline use remain available.
 - **Help with the why.** An optional local tutor uses an installed Ollama text model for broader math explanations and follow-up practice. Its replies are labeled unverified guidance and saved with your page.
 
@@ -87,11 +89,11 @@ Both transitions hold. Changing the second line to `2x = 20` flags that line. `x
 
 Use **Settings & backups → Export backup** before clearing browser data or changing devices. Import adds copies of notebooks and retains existing notebooks. PNG export contains ink and images; Print / PDF uses the current page. Hosted and local studios have separate browser storage. Private browsing and storage quotas can limit persistence. See [privacy and recovery](docs/PRIVACY.md).
 
-The workflow GIF and local OCR/tutor captures above were recorded in 1.0.0. The current notebook screenshot reflects the 1.0.1 visual update.
+The workflow GIF and local OCR/tutor captures above were recorded in 1.0.0. The current notebook captures show 1.0.3-dev.0; the earlier 1.0.1 images remain in the repository.
 
 ## Develop and verify
 
-<p align="center"><a href="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml"><img src="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml/badge.svg" alt="Verification and deployment status"></a> <img src="https://img.shields.io/badge/license-MIT-2249b6" alt="MIT license"> <img src="https://img.shields.io/badge/runtime_dependencies-0-2249b6" alt="Zero runtime dependencies"></p>
+<p align="center"><a href="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml"><img src="https://github.com/nazeeh111/Syllune/actions/workflows/release.yml/badge.svg" alt="Verification and deployment status"></a> <img src="https://img.shields.io/badge/license-MIT-2249b6" alt="MIT license"> </p>
 
 ```sh
 npm test

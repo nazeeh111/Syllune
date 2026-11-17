@@ -203,7 +203,7 @@ export function loadState(storage) {
   if (raw === null) return freshState();
   return validateBackup(raw);
 }
-export function saveState(storage, state, expectedRaw) {
+function writeState(storage, state, expectedRaw) {
   if (expectedRaw !== undefined && storage.getItem(STORAGE_KEY) !== expectedRaw)
     throw Error(
       'Another tab changed your saved notebook. Export this tab’s work and reload.',
@@ -211,5 +211,45 @@ export function saveState(storage, state, expectedRaw) {
   const raw = JSON.stringify(state);
   validateBackup(raw);
   storage.setItem(STORAGE_KEY, raw);
-  return raw.length;
+  return raw;
+}
+export function saveState(storage, state, expectedRaw) {
+  return writeState(storage, state, expectedRaw).length;
+}
+// Own the last admitted generation for this tab. The app still holds the origin writer lock.
+export class NotebookSession {
+  constructor(storage) { this.storage = storage; this.expectedRaw = undefined; this.damaged = false; }
+  open() {
+    const raw = this.storage.getItem(STORAGE_KEY);
+    this.expectedRaw = raw;
+    try {
+      const state = raw === null ? freshState() : validateBackup(raw);
+      this.damaged = false;
+      return state;
+    } catch (error) {
+      this.damaged = true;
+      throw error;
+    }
+  }
+  get recoveryBytes() { return this.damaged ? this.expectedRaw : undefined; }
+  recover(state) {
+    if (!this.damaged || typeof this.expectedRaw !== 'string')
+      throw Error('No damaged workspace was admitted for recovery. Reload first.');
+    if (this.storage.getItem(STORAGE_KEY) !== this.expectedRaw)
+      throw Error('Saved bytes changed. Export this copy and reload before recovery.');
+    const key = STORAGE_KEY + '.recovery.' + uid();
+    if (this.storage.getItem(key) !== null) throw Error('Recovery key already exists. Retry.');
+    this.storage.setItem(key, this.expectedRaw);
+    if (this.storage.getItem(key) !== this.expectedRaw) throw Error('Recovery copy could not be verified.');
+    const raw = writeState(this.storage, state, this.expectedRaw);
+    this.expectedRaw = raw;
+    this.damaged = false;
+    return key;
+  }
+  save(state) {
+    if (this.expectedRaw === undefined || this.damaged) throw Error('Open or recover the notebook before saving.');
+    const raw = writeState(this.storage, state, this.expectedRaw);
+    this.expectedRaw = raw;
+    return raw.length;
+  }
 }

@@ -1,0 +1,35 @@
+{
+  "version": "1.0.3-dev.0",
+  "capture_kind": "Actual isolated Chrome localhost studio after server stop, service-worker offline reload and native controls",
+  "viewports": {
+    "studio-current.png": [
+      1280,
+      1000
+    ],
+    "studio-current-mobile.png": [
+      320,
+      1000
+    ]
+  },
+  "captures": {
+    "studio-current.png": "a3f44d5b6efb81d90dc495d60696694801a31ef85692001a5cb2ab10d2464ee6",
+    "studio-current-mobile.png": "fe3da78d57b4c65867611d03746bd66dbfb2b0c591222a2c989ecc346d1ba572"
+  },
+  "web_source": {
+    "web/index.html": "ecf85720868e72e78f081fe34c57102885a37c5aca4acbbeda1bd657698825f1",
+    "web/practice.js": "5ad08cd9f11ddb15cb4e8718bc0029d41236342a5cd00fc6c56ff487837c41e3",
+    "web/quiet-ink.js": "076f9fbee922d823bfbe0cfbe0cf977f95b1fd3419ded2936e3c2e46a628f012",
+    "web/ink.js": "f42303313675f3cf9d16b4682ff5c755e56477186844b2922916d944df4733c0",
+    "web/icon.svg": "9da5ebd6015faa2e69f3be3c30d9a33e60bb00e156dbe951834b53157a382669",
+    "web/style.css": "cd56cf39844911af0b184c686724d7767a9bfb2966ada0bd457327412e709e14",
+    "web/engine.js": "8527f487b38296f5b8671f3e15d6c331f8f6e6e03b79f844fa9df2b8f84307d4",
+    "web/manifest.webmanifest": "f70b28150cec6e051293bc881a27ad004ef71ceb627a9358a872a9e93b3866e3",
+    "web/fonts.css": "95de3ffe64b00a3233ba2b8012e8115c7c65546f4e6978fe76a72bf0cbd2b0ec",
+    "web/app.js": "650ce84174a78a8bb00a79cf0a76c1dcddb0c761a93542dc1c3bcf390f81e33b",
+    "web/sw.js": "c6b2768f547e1aab5d1d67e81cb6690370e4ffbcbf8799bb0a3f0b9a01f8b7e7",
+    "web/storage.js": "2cb4f4c0b2d290054d4f6711f01f59253a7e85ffa4e9837e4640675c6dfd158b"
+  },
+  "state": "Built-in sign-error example created as a separate page through Try an example; exact checker flags2x=20. Quiet disabled. No OCR or tutor/model execution. Example supplies ink; checks use the typed transcript.",
+  "checks": "Native edit/reload/backup import and malformed rejection; real writer-lock refusal and current paused status; ink stroke undo/redo andPNG export; supported and unsupported math; practice recorded1answer; offline reload and exact check with server stopped.",
+  "limits": "Synthetic owned data only; no personal notebook, OCR accuracy, device or general mathematical correctness/fullAT claim."
+}
