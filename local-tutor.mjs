@@ -26,7 +26,12 @@ function validate(input) {
 }
 export function createLocalTutor({ fetchImpl = fetch } = {}) {
   let busy = false;
-  const json = async (path, body, signal) => {
+  const json = async (path, body, signal, timeout = 3000) => {
+    const deadline = AbortSignal.timeout(timeout);
+    const requestSignal = signal
+      ? AbortSignal.any([signal, deadline])
+      : deadline;
+    requestSignal.throwIfAborted();
     const r = await fetchImpl(BASE + path, {
       ...(body
         ? {
@@ -35,14 +40,17 @@ export function createLocalTutor({ fetchImpl = fetch } = {}) {
             body: JSON.stringify(body),
           }
         : {}),
-      signal: signal || AbortSignal.timeout(3000),
+      signal: requestSignal,
     });
+    requestSignal.throwIfAborted();
     if (!r.ok)
       throw Error('The local model service could not finish this request.');
-    return r.json();
+    const data = await r.json();
+    requestSignal.throwIfAborted();
+    return data;
   };
-  const models = async () => {
-    const d = await json('/tags');
+  const models = async ({ signal } = {}) => {
+    const d = await json('/tags', undefined, signal);
     if (!Array.isArray(d.models))
       throw Error('Local model inventory is unavailable.');
     return d.models
@@ -64,8 +72,9 @@ export function createLocalTutor({ fetchImpl = fetch } = {}) {
       }))
       .slice(0, 50);
   };
-  const ask = async (input) => {
+  const ask = async (input, { signal } = {}) => {
     validate(input);
+    signal?.throwIfAborted();
     if (busy)
       throw Object.assign(
         Error(
@@ -75,12 +84,12 @@ export function createLocalTutor({ fetchImpl = fetch } = {}) {
       );
     busy = true;
     try {
-      const installed = await models();
+      const installed = await models({ signal });
       if (!installed.some((m) => m.name === input.model))
         throw Error(
           'Choose an installed local model. Cloud models and automatic downloads are not used.',
         );
-      const show = await json('/show', { model: input.model });
+      const show = await json('/show', { model: input.model }, signal);
       if (
         show.remote_host ||
         show.remote_model ||
@@ -112,7 +121,8 @@ export function createLocalTutor({ fetchImpl = fetch } = {}) {
           ...(canDisable ? { think: false } : {}),
           options: { num_ctx: 8192, num_predict: 2048, temperature: 0.2 },
         },
-        AbortSignal.timeout(120000),
+        signal,
+        120000,
       );
       const answer = r.message?.content;
       if (r.done !== true || !text(answer, 20000) || !answer.trim())
@@ -128,6 +138,7 @@ export function createLocalTutor({ fetchImpl = fetch } = {}) {
         contextTruncated: transcript.length > 8000,
       };
     } catch (e) {
+      if (signal?.aborted) throw signal.reason;
       if (e.name === 'TimeoutError' || e.name === 'AbortError')
         throw Error(
           'The local model took too long. Your question is preserved. Try a shorter question or choose another installed model.',

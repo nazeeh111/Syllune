@@ -122,11 +122,22 @@ export function createAppServer({ tutor = createLocalTutor() } = {}) {
       } catch {
         return send(res, 400, { error: 'Invalid JSON question.' });
       }
+      const request = new AbortController();
+      const disconnected = () => {
+        if (!res.writableEnded) request.abort();
+      };
+      res.once('close', disconnected);
+      if (res.destroyed) request.abort();
       try {
-        return send(res, 200, await tutor.ask(input));
+        const answer = await tutor.ask(input, { signal: request.signal });
+        if (!res.destroyed) return send(res, 200, answer);
       } catch (e) {
-        return send(res, e.status || 503, { error: e.message });
+        if (!res.destroyed)
+          return send(res, e.status || 503, { error: e.message });
+      } finally {
+        res.off('close', disconnected);
       }
+      return;
     }
     if (path === '/api/recognize') {
       if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });
