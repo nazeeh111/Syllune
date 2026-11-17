@@ -209,6 +209,61 @@ try {
   );
   assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), true);
   assert.equal(await p.locator('#mobile-menu').evaluate((e) => e === document.activeElement), true);
+  await p.locator('#mobile-menu').press('Enter');
+  await p.locator('[data-view=studio]').press('Enter');
+  const transcript = p.locator('#transcript');
+  const withBlankLines = '3x + 6 = 18\n3x = 12\n\n x = 6 \nx + 1 = 7';
+  await fillTranscript(withBlankLines);
+  await transcript.press('Control+Enter');
+  const reviewTitle = p.getByRole('heading', { name: 'Review step 3' });
+  assert.equal(await reviewTitle.evaluate((node) => node === document.activeElement), true);
+  assert.equal(await p.locator('#review-count').innerText(), '1 verified · 1 waiting on this step');
+  assert.equal(await p.locator('.review-history').evaluate((node) => node.open), false);
+  assert.equal(await p.locator('.step-result.correct').isVisible(), false);
+  assert.equal(await p.locator('.step-result.incorrect').isVisible(), true);
+  await p.getByText('Show checked working').press('Enter');
+  assert.equal(await p.locator('.step-result.correct').isVisible(), true);
+  await p.getByRole('button', { name: 'Edit step 3' }).press('Enter');
+  assert.deepEqual(await transcript.evaluate((node) => ({
+    selected: node.value.slice(node.selectionStart, node.selectionEnd),
+    focused: node === document.activeElement,
+  })), { selected: ' x = 6 ', focused: true });
+  await fillTranscript('3x + 6 = 18\n3x = 12\nx = 4');
+  await p.locator('#check-announcement').waitFor({ state: 'attached' });
+  await p.waitForFunction(() =>
+    document.querySelector('#check-announcement').textContent.includes('2 verified transitions'),
+  );
+  assert.equal(await transcript.evaluate((node) => node === document.activeElement), true);
+  const original = '(x^2-1)/(x-1)';
+  await fillTranscript(original + '\n\n x+1 \nx+1 where x != 1');
+  await transcript.press('Control+Enter');
+  assert.equal(await p.locator('.review-title').innerText(), 'Review step 2');
+  assert.match(await p.locator('.step-result.incorrect').innerText(), /The real domain changed/);
+  assert.equal(await p.locator('#review-count').innerText(), '0 verified · 1 waiting on this step');
+  await p.getByRole('button', { name: 'Edit step 2' }).press('Enter');
+  assert.deepEqual(await transcript.evaluate((node) => ({
+    selected: node.value.slice(node.selectionStart, node.selectionEnd),
+    focused: node === document.activeElement,
+  })), { selected: ' x+1 ', focused: true });
+  await p.keyboard.insertText('x+1 where x != 1');
+  await transcript.press('Control+Enter');
+  assert.equal(await p.locator('.review-title').innerText(), 'All transitions checked');
+  await p.getByText('Show checked working').press('Enter');
+  assert.equal(await p.locator('.step-result.correct:visible').count(), 2);
+  assert.match(await p.locator('.step-result.correct').first().innerText(), /same real domain/);
+  await fillTranscript(Array(81).fill('x=4').join('\n'));
+  await transcript.press('Control+Enter');
+  assert.equal(await p.locator('.review-title').innerText(), 'More working needed');
+  assert.match(await p.locator('#review-count').innerText(), /Check at most 80 lines/);
+
+  await fillTranscript('1/(x^3-1)\n0');
+  await transcript.press('Control+Enter');
+  assert.equal(await p.locator('h3.review-title').innerText(), 'Review step 1');
+  assert.equal(await p.locator('.step-result.unverified').isVisible(), true);
+  assert.equal(await p.locator('.review-history').count(), 0);
+  assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await p.locator('#mobile-menu').press('Enter');
+  await p.locator('[data-view=practice]').press('Enter');
   await p.setViewportSize({ width: 1440, height: 1000 });
   await p.waitForFunction(() => !document.querySelector('.sidebar').inert);
   assert.equal(await p.locator('.sidebar').evaluate((e) => e.inert), false);

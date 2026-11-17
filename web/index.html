@@ -307,7 +307,8 @@
                     Review ink reading →
                   </button>
                 </div>
-                <div id="check-results" class="results" aria-live="polite">
+                <p id="check-announcement" class="sr-only" role="status"></p>
+                <div id="check-results" class="results">
                   <div class="check-empty">
                     <span class="mini-label">A SECOND LOOK</span>
                     <h3>What changed between lines?</h3>
@@ -384,7 +385,7 @@ x = 4"
                   <span id="practice-topic">LINEAR EQUATIONS</span
                   ><span id="practice-index">01</span>
                 </div>
-                <h2 id="problem-prompt"></h2>
+                <h2 id="problem-prompt" tabindex="-1"></h2>
                 <label for="practice-answer">Your answer</label
                 ><input
                   id="practice-answer"

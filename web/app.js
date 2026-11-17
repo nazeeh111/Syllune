@@ -379,6 +379,7 @@ function showView(view) {
 }
 function resetResults() {
   $('check-results').replaceChildren();
+  $('check-announcement').textContent = '';
   const d = el('div', 'check-empty');
   d.append(el('span', 'mini-label', 'A SECOND LOOK'));
   const h = el('h3', '', 'What changed between lines?');
@@ -392,60 +393,73 @@ function resetResults() {
   );
   $('check-results').append(d);
 }
-function runCheck() {
+function runCheck({ focusResult = false } = {}) {
   clearTimeout(quietTimer);
-  const text = $('transcript').value;
+  const transcript = $('transcript');
+  const text = transcript.value;
   page.transcript = text;
   persist();
   updateTranscriptSummary();
-  const result = checkWork(text);
+  const { steps, firstIssue, error } = checkWork(text);
   const box = $('check-results');
-  box.replaceChildren();
-  if (!result.steps.length) {
-    box.append(
-      el(
-        'p',
-        'small',
-        result.error || 'Add at least two lines to compare your steps.',
-      ),
-    );
-    return;
+  const checked = steps.filter((step) => step.status === 'correct').length;
+  const blocked = steps.filter((step) => step.status === 'blocked').length;
+  const title = firstIssue != null && steps.length
+    ? `Review step ${firstIssue + 1}`
+    : checked
+      ? 'All transitions checked'
+      : 'More working needed';
+  const summary = el('h3', 'review-title', title);
+  summary.tabIndex = -1;
+  box.replaceChildren(summary);
+  let message = error || 'Add at least two lines to compare your steps.';
+  if (firstIssue != null && steps.length) {
+    message = `${checked} verified · ${blocked} waiting on this step`;
+  } else if (checked) {
+    message = `${checked} verified ${checked === 1 ? 'transition' : 'transitions'}`;
   }
-  box.append(el('div', 'mini-label result-caption', 'TRANSCRIPT REVIEW'));
-  for (let i = 0; i < result.steps.length; i++) {
-    const r = result.steps[i];
-    if (r.status === 'start') {
-      box.append(
-        el(
-          'p',
-          'small',
-          `${String(i + 1).padStart(2, '0')} · Starting point, not a verified answer.`,
-        ),
+  const count = el('p', 'review-count', message);
+  count.id = 'review-count';
+  summary.setAttribute('aria-describedby', count.id);
+  box.append(count);
+
+  const history = el('details', 'review-history');
+  history.append(el('summary', '', 'Show checked working'));
+  const lines = text.split('\n');
+  const starts = [];
+  let offset = 0;
+  for (const line of lines) {
+    if (line.trim()) starts.push([offset, offset + line.length]);
+    offset += line.length + 1;
+  }
+  for (const [i, step] of steps.entries()) {
+    if (step.status === 'start') {
+      history.append(
+        el('p', 'small', 'Step 1 · Starting point, not a verified answer.'),
       );
       continue;
     }
-    if (r.status === 'blocked') {
-      box.append(
-        el(
-          'p',
-          'small',
-          `${String(i + 1).padStart(2, '0')} · Waiting for the earlier step to be resolved.`,
-        ),
-      );
-      continue;
-    }
-    const card = el('div', 'step-result ' + r.status);
+    if (step.status === 'blocked') continue;
+    const card = el('div', 'step-result ' + step.status);
     card.append(
-      el('div', 'step-line', `Step ${i + 1} · ${r.line}`),
-      el('h3', '', r.title),
-      el('p', '', r.detail),
+      el('div', 'step-line', `Step ${i + 1} · ${step.line}`),
+      el('h4', '', step.title),
+      el('p', '', step.detail),
     );
-    if (r.hint && r.status === 'incorrect') {
-      card.append(el('p', '', r.hint));
-      const btn = el('button', 'text-button', 'Practice this idea →');
-      btn.onclick = () => {
+    const actions = el('div', 'review-actions');
+    const edit = el('button', 'text-button edit-step', `Edit step ${i + 1} ↗`);
+    edit.onclick = () => {
+      openTranscript();
+      if (transcript.value === text)
+        transcript.setSelectionRange(...starts[i]);
+    };
+    actions.append(edit);
+    if (step.hint && step.status === 'incorrect') {
+      card.append(el('p', '', step.hint));
+      const practice = el('button', 'text-button', 'Practice this idea →');
+      practice.onclick = () => {
         topic =
-          r.line.includes('^2') || text.includes('^2')
+          step.line.includes('^2') || text.includes('^2')
             ? 'quadratic'
             : text.includes('d/dx')
               ? 'derivative'
@@ -454,31 +468,19 @@ function runCheck() {
                 : 'expand';
         nextProblem();
         showView('practice');
+        $('problem-prompt').focus();
       };
-      card.append(btn);
+      actions.append(practice);
     }
-    const edit = el('button', 'text-button edit-step', `Edit step ${i + 1} ↗`);
-    edit.onclick = () => {
-      openTranscript();
-      if ($('transcript').value !== text) return;
-      const lines = text.split('\n');
-      // The engine ignores empty lines. Select the actual nonempty source line.
-      const sourceIndex = lines
-        .map((line, index) => (line.trim() ? index : -1))
-        .filter((index) => index >= 0)[i];
-      const start = lines
-        .slice(0, sourceIndex)
-        .reduce((n, line) => n + line.length + 1, 0);
-      $('transcript').setSelectionRange(
-        start,
-        start + lines[sourceIndex].length,
-      );
-    };
-    card.append(edit);
-    box.append(card);
+    card.append(actions);
+    (i === firstIssue ? box : history).append(card);
   }
-  if (result.steps.length === 1)
-    box.append(el('p', 'small', 'Add a second line to check a transition.'));
+  if (history.children.length > 1) box.append(history);
+  $('check-announcement').textContent = focusResult ? '' : `${title}. ${message}`;
+  if (focusResult) {
+    summary.focus({ preventScroll: true });
+    box.scrollIntoView({ block: 'start' });
+  }
 }
 function canCreatePage() {
   const total = state.notebooks.reduce(
@@ -960,10 +962,7 @@ $('quiet-toggle').onchange = () => {
   clearTimeout(quietTimer);
   persist();
 };
-$('check').onclick = () => {
-  runCheck();
-  $('check-results').scrollIntoView({ block: 'nearest' });
-};
+$('check').onclick = () => runCheck({ focusResult: true });
 $('recognize').onclick = recognize;
 $('example').onclick = loadExample;
 $('blank-example').onclick = loadExample;
@@ -1175,9 +1174,9 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   const editing = e.target.matches('input,textarea,select,[contenteditable]');
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !document.querySelector('dialog[open]')) {
     e.preventDefault();
-    if (currentView === 'studio') runCheck();
+    if (currentView === 'studio') runCheck({ focusResult: true });
     return;
   }
   if (editing || document.querySelector('dialog[open]')) return;
